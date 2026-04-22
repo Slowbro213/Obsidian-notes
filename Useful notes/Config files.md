@@ -1,0 +1,1 @@
+You can find the config files for the parts that makeup kubernetes, such as etcd, kubelet, the kube-controller etc, in /etc/kubernetes/manifests
