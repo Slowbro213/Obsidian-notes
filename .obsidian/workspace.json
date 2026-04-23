@@ -55,12 +55,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/k8s lifecycle management/RBAC ( Very Important!!!! ).md",
+                "file": "CKAD/k8s lifecycle management/Helm and Kustomize.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "RBAC ( Very Important!!!! )"
+              "title": "Helm and Kustomize"
             }
           }
         ],
@@ -252,11 +252,11 @@
   },
   "active": "56cbfbd574ceecbb",
   "lastOpenFiles": [
+    "CKAD/Video Progress.md",
     "CKAD/k8s lifecycle management/Helm and Kustomize.md",
     "CKAD/k8s lifecycle management/RBAC ( Very Important!!!! ).md",
     "CKAD/k8s lifecycle management/HA Control Plane.md",
     "CKAD/Useful notes/Command patterns.md",
-    "CKAD/Video Progress.md",
     "CKAD/Useful notes/Config files.md",
     "CKAD",
     "CKAD/k8s lifecycle management/Update cluster version.md",
