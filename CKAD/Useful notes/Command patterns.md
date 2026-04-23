@@ -1,13 +1,19 @@
 Get resources
 
 ```bash
-kubectl get <resource> 
+kubectl <action> <resource> 
 ```
 
 sometimes with a namespace
 
 ```bash
-kubectl get <resource> -n <namespace>
+kubectl <action> <resource> -n <namespace>
+```
+
+<\action>  here can be a get, create, describe etc. We can also apply whatever a yaml file contains like:
+
+```bash
+kubectl apply -f file.yaml
 ```
 
 etcdctl commands
