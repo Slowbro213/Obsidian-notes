@@ -55,12 +55,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/k8s workflows/ConfigMaps and Secrets.md",
+                "file": "CKAD/k8s workflows/Autoscaling workloads.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ConfigMaps and Secrets"
+              "title": "Autoscaling workloads"
             }
           }
         ],
@@ -252,10 +252,10 @@
   },
   "active": "56cbfbd574ceecbb",
   "lastOpenFiles": [
-    "CKAD/k8s workflows/Autoscaling workloads.md",
-    "CKAD/k8s workflows/ConfigMaps and Secrets.md",
-    "CKAD/k8s workflows/Deployments.md",
     "CKAD/Video Progress.md",
+    "CKAD/k8s workflows/Autoscaling workloads.md",
+    "CKAD/k8s workflows/Deployments.md",
+    "CKAD/k8s workflows/ConfigMaps and Secrets.md",
     "CKAD/k8s workflows",
     "CKAD/k8s lifecycle management/Update cluster version.md",
     "CKAD/Useful notes/Command patterns.md",
