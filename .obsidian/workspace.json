@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/Preparation Progress.md",
+                "file": "CKAD/services and networking/Services/ClusterIP and NodePort.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Preparation Progress"
+              "title": "ClusterIP and NodePort"
             }
           }
         ]
@@ -209,13 +209,14 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKAD/services and networking/Services/ClusterIP and NodePort.md",
     "CKAD/services and networking/Services/LoadBalancer and Ingress.md",
+    "CKAD/k8s workflows/Autoscaling workloads.md",
+    "CKAD/services and networking/Networking.md",
+    "CKAD/services and networking/Services/ClusterIP and NodePort.md",
+    "CKAD/Preparation Progress.md",
     "CKAD/services and networking/Services/Basics.md",
     "CKAD/services and networking/Services.md",
     "CKAD/services and networking/Services",
-    "CKAD/services and networking/Networking.md",
-    "CKAD/Preparation Progress.md",
     "CKAD/k8s lifecycle management/Backing up and restoring etcd.md",
     "CKAD/services and networking",
     "CKAD/Untitled.md",
@@ -223,7 +224,6 @@
     "CKAD/k8s lab setup/Control Plane Node.md",
     "CKAD/k8s workflows/Deployments.md",
     "CKAD/k8s lab setup/Init For all Nodes.md",
-    "CKAD/k8s workflows/Autoscaling workloads.md",
     "CKAD/k8s workflows/ConfigMaps and Secrets.md",
     "CKAD/k8s workflows",
     "CKAD/k8s lifecycle management/Update cluster version.md",
