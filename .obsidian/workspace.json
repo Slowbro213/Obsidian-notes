@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/k8s lifecycle management/Backing up and restoring etcd.md",
+                "file": "CKAD/Preparation Progress.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Backing up and restoring etcd"
+              "title": "Preparation Progress"
             }
           }
         ]
@@ -209,7 +209,8 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKAD/Kubernetes Course – CKAD Preparation Progress.md",
+    "CKAD/k8s lifecycle management/Backing up and restoring etcd.md",
+    "CKAD/Preparation Progress.md",
     "CKAD/services and networking",
     "CKAD/Untitled.md",
     "CKAD/k8s workflows/Requests, Limits and Advanced Scheduling.md",
@@ -226,7 +227,6 @@
     "CKAD/k8s lifecycle management/RBAC ( Very Important!!!! ).md",
     "CKAD/k8s lifecycle management/HA Control Plane.md",
     "CKAD",
-    "CKAD/k8s lifecycle management/Backing up and restoring etcd.md",
     "CKAD/Useful notes",
     "CKAD/k8s lab setup/Worker Nodes.md",
     "Untitled.base",
