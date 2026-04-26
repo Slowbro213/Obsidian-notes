@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/services and networking/Services/ClusterIP and NodePort.md",
+                "file": "CKAD/services and networking/Services/LoadBalancer and Ingress.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ClusterIP and NodePort"
+              "title": "LoadBalancer and Ingress"
             }
           }
         ]
@@ -190,7 +190,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 202.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -209,10 +209,11 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
+    "CKAD/k8s workflows/Deployments.md",
     "CKAD/services and networking/Services/LoadBalancer and Ingress.md",
     "CKAD/k8s workflows/Autoscaling workloads.md",
-    "CKAD/services and networking/Networking.md",
     "CKAD/services and networking/Services/ClusterIP and NodePort.md",
+    "CKAD/services and networking/Networking.md",
     "CKAD/Preparation Progress.md",
     "CKAD/services and networking/Services/Basics.md",
     "CKAD/services and networking/Services.md",
@@ -222,7 +223,6 @@
     "CKAD/Untitled.md",
     "CKAD/k8s workflows/Requests, Limits and Advanced Scheduling.md",
     "CKAD/k8s lab setup/Control Plane Node.md",
-    "CKAD/k8s workflows/Deployments.md",
     "CKAD/k8s lab setup/Init For all Nodes.md",
     "CKAD/k8s workflows/ConfigMaps and Secrets.md",
     "CKAD/k8s workflows",
