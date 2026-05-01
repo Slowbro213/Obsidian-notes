@@ -1,7 +1,3 @@
-# Kubernetes RBAC Notes
-
-------------------------------------------------------------------------
-
 ## Core RBAC Objects
 
 There are 4 main objects RBAC is built on:

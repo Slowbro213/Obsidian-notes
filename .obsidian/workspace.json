@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKA/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
+                "file": "CKA/storage/Volumes, PVs, and PVCs.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "LoadBalancer , Ingress and Gateway API"
+              "title": "Volumes, PVs, and PVCs"
             }
           }
         ]
@@ -190,7 +190,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 202.5
+    "width": 214.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -207,41 +207,42 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "c172ba13c193321d",
+  "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKA/services and networking/CoreDNS.md",
-    "CKA/Useful notes/Untitled.md",
-    "Untitled.md",
     "CKA/Preparation Progress.md",
-    "CKA/services and networking/NetworkPolicy.md",
-    "CKA/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
-    "CKA/services and networking/Networking.md",
-    "CKA/lab setup/Control Plane Node.md",
-    "CKA/lab setup/Init For all Nodes.md",
-    "CKA/lab setup/Worker Nodes.md",
-    "CKA/services and networking/Services/ClusterIP and NodePort.md",
-    "CKA/services and networking/Services/Basics.md",
     "CKA/workflows/Requests, Limits and Advanced Scheduling.md",
     "CKA/workflows/Deployments.md",
     "CKA/workflows/ConfigMaps and Secrets.md",
     "CKA/workflows/Autoscaling workloads.md",
+    "CKA/storage/Volumes, PVs, and PVCs.md",
+    "CKA/services and networking/NetworkPolicy.md",
+    "CKA/services and networking/CoreDNS.md",
+    "CKA/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
+    "CKA/services and networking/Services/ClusterIP and NodePort.md",
+    "CKA/services and networking/Services/Basics.md",
     "CKA/lifecycle management/Update cluster version.md",
+    "CKA/lifecycle management/RBAC ( Very Important!!!! ).md",
     "CKA/lifecycle management/Helm and Kustomize.md",
     "CKA/lifecycle management/HA Control Plane.md",
+    "CKA/lifecycle management/Backing up and restoring etcd.md",
+    "CKA/lab setup/Worker Nodes.md",
+    "CKA/lab setup/Init For all Nodes.md",
+    "CKA/lab setup/Control Plane Node.md",
+    "CKA/storage",
+    "CKA/Useful notes/Untitled.md",
+    "Untitled.md",
+    "CKA/services and networking/Networking.md",
     "CKAD/services and networking/Services.md",
     "CKA/services and networking/Services",
-    "CKA/lifecycle management/Backing up and restoring etcd.md",
     "CKA/services and networking",
     "CKAD/Untitled.md",
     "CKA/workflows",
     "CKA/Useful notes/Command patterns.md",
     "CKA/Useful notes/Config files.md",
-    "CKA/lifecycle management/RBAC ( Very Important!!!! ).md",
     "CKA",
     "CKA/Useful notes",
     "Untitled.base",
     "CKA/lifecycle management",
-    "Welcome.md",
     "CKA/lab setup"
   ]
 }

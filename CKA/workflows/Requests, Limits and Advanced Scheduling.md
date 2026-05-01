@@ -1,7 +1,3 @@
-# Kubernetes Scheduling & Resource Management Notes
-
----
-
 ## Requests and Limits
 
 ### Requests

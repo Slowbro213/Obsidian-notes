@@ -1,5 +1,3 @@
-# Kubernetes Worker Node Setup Notes
-
 ## Worker Node Preparation
 
 Worker nodes were clones of an early version of the control plane node,

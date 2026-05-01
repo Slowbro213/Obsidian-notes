@@ -1,7 +1,3 @@
-# Kubernetes Rolling Update Notes (NGINX)
-
----
-
 ## Overview
 
 The default strategy for deploying is a rolling update, where pods are incrementally updated with new ones to ensure your app has no downtime.
