@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKA/storage/Static Provisioning.md",
+                "file": "CKA/storage/StorageClasses and Dynamic Provisioning.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Static Provisioning"
+              "title": "StorageClasses and Dynamic Provisioning"
             }
           }
         ]
@@ -209,13 +209,14 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
+    "CKA/storage/Static Provisioning.md",
+    "CKA/storage/StorageClasses and Dynamic Provisioning.md",
     "CKA/storage/Volumes, PVs, and PVCs.md",
     "CKA/services and networking/Services/Basics.md",
     "CKA/services and networking/Services/ClusterIP and NodePort.md",
     "CKA/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
     "CKA/services and networking/NetworkPolicy.md",
     "CKA/services and networking/CoreDNS.md",
-    "CKA/storage/Static Provisioning.md",
     "CKA/lab setup/Init For all Nodes.md",
     "CKA/lifecycle management/RBAC ( Very Important!!!! ).md",
     "Bases/YAML.base",
@@ -240,7 +241,6 @@
     "CKA/services and networking",
     "CKAD/Untitled.md",
     "CKA/workflows",
-    "CKA/Useful notes/Command patterns.md",
     "CKA",
     "CKA/Useful notes",
     "CKA/lifecycle management",
