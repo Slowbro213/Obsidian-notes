@@ -1,3 +1,4 @@
+# NetworkPolicy
 
 Act as a firewall for pods, controlling the traffic at the IP and port level.
 
@@ -19,8 +20,10 @@ metadata:
 spec:
   podSelector: {} # The empty selector means "select all pods"
   policyTypes:
-  - Ingress
+    - Ingress
 ```
+
+---
 
 ## Create an Nginx Server
 
@@ -60,15 +63,15 @@ spec:
     matchLabels:
       app: web-server
   policyTypes:
-  - Ingress
+    - Ingress
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          access: "true"
-    ports:
-    - protocol: TCP
-      port: 80
+    - from:
+        - podSelector:
+            matchLabels:
+              access: "true"
+      ports:
+        - protocol: TCP
+          port: 80
 ```
 
 ```bash
