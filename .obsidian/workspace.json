@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKA/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
+                "file": "CKA/services and networking/NetworkPolicy.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "LoadBalancer , Ingress and Gateway API"
+              "title": "NetworkPolicy"
             }
           }
         ]
@@ -209,8 +209,8 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKA/services and networking/NetworkPolicy.md",
     "CKA/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
+    "CKA/services and networking/NetworkPolicy.md",
     "CKA/services and networking/Networking.md",
     "CKA/k8s lab setup/Control Plane Node.md",
     "CKA/k8s lab setup/Init For all Nodes.md",

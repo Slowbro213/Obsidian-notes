@@ -474,10 +474,10 @@ Gateway API is the next generation of Ingress: more flexible and role-oriented.
 
 It decouples configuration into three resource types:
 
-| Resource | Role | Description |
-|---|---|---|
-| GatewayClass | Admin | A template for a type of load-balancer. |
-| Gateway | Operator | Defines where and how the load-balancer listens. |
-| HTTPRoute | Developer | Defines protocol-specific routing rules. |
+| Resource     | Role      | Description                                      |
+| ------------ | --------- | ------------------------------------------------ |
+| GatewayClass | Admin     | A template for a type of load-balancer.          |
+| Gateway      | Operator  | Defines where and how the load-balancer listens. |
+| HTTPRoute    | Developer | Defines protocol-specific routing rules.         |
 
 This separation of rules enhances security and modularity.
