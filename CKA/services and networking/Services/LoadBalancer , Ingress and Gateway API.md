@@ -1,29 +1,59 @@
-LoadBalancers:
-Exposes the Service Externally using a cloud providers LoadBalander
-The Standard way to expose a service to the internet in a cloud environment
-Automatically creates NodePort and ClusterIP services.
-The cloud provider provisions a load balancer and assigns an external IP.
+## LoadBalancers
+
+- Exposes the Service externally using a cloud provider’s LoadBalancer.
+- The standard way to expose a service to the internet in a cloud environment.
+- Automatically creates NodePort and ClusterIP services.
+- The cloud provider provisions a load balancer and assigns an external IP.
 
 ---
 
-Ingress & Gateway API
+# Ingress & Gateway API
 
-Manage external access more efficiently than LoadBalancer services.
-Provide L7 (HTTP/HTTPS) routing.
+## Overview
 
-Ingress
+Ingress and Gateway API manage external access more efficiently than LoadBalancer services.
 
-Manages external access, provides SSL, Load Balancing and name-based virtual hosting
-Requires an IngressController (Nginx, Traefik, HAProxy) to run in the cluster
-The controller watches for ingress resources and configures the proxy accordingly.
+They provide **L7 (HTTP/HTTPS) routing**.
 
-Now lets create an Ingress for our services in order to make use of path based routing. The tutorial uses the popular but now deprecated Nginx Ingress Controller:
+---
+
+# Ingress
+
+## What Ingress Does
+
+Ingress manages external access and provides:
+
+- SSL
+- Load balancing
+- Name-based virtual hosting
+
+Ingress requires an **IngressController** to run in the cluster, such as:
+
+- NGINX
+- Traefik
+- HAProxy
+
+The controller watches for Ingress resources and configures the proxy accordingly.
+
+---
+
+## Creating an Ingress for Path-Based Routing
+
+Now let’s create an Ingress for our services in order to make use of path-based routing.
+
+The tutorial uses the popular but now deprecated NGINX Ingress Controller:
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
 ```
 
-Now we'll create two applications. This app is just an echo server:
+---
+
+## Creating Two Applications
+
+Now we’ll create two applications.
+
+This app is just an echo server:
 
 ```bash
 kubectl create deployment app-one --image=k8s.gcr.io/echoserver:1.4
@@ -33,7 +63,14 @@ kubectl create deployment app-two --image=k8s.gcr.io/echoserver:1.4
 kubectl expose deployment app-two --port=8080
 ```
 
-Now we'll create an Ingress Resource where we will define our routing rules. The kubernetes docs provides the following yaml:
+---
+
+## Creating the Ingress Resource
+
+Now we’ll create an Ingress Resource where we will define our routing rules.
+
+The Kubernetes docs provide the following YAML:
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -62,10 +99,14 @@ spec:
               number: 8080
 ```
 
-The tutorial changes the name of the Resource, adds the annotations part, and changes the paths to work without our example. The paths are changed by adding one more path,  then setting the routing rule to be based on the path prefix with the paths being /app1 and /app2. then we set the rule that each path will route the request to app-one and the other to app-two.
+The tutorial changes the name of the Resource, adds the annotations part, and changes the paths to work with our example.
+
+The paths are changed by adding one more path, then setting the routing rule to be based on the path prefix, with the paths being `/app1` and `/app2`.
+
+Then we set the rule that each path will route the request to `app-one` and the other to `app-two`.
 
 ```yaml
-#ingress.yaml
+# ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -92,22 +133,43 @@ spec:
             port:
               number: 8080
 ```
+
+Apply the Ingress resource:
 
 ```bash
 kubectl apply -f ingress.yaml
 ```
 
-Now we need to test it. The Ingress has created a NodePort and ClusterIP service, as such we can test it just like we did before. im not laying out the steps one by one again but ill paste the entire flow
+---
 
-UPDATE: it seems the deployment wasnt working because ( According to ChatGPT ) the image format is outdated. I confirmed that there was a problem pulling the image myself without ChatGPT like so:
-1: Notice they arent running
+## Testing the Ingress
+
+Now we need to test it.
+
+The Ingress has created a NodePort and ClusterIP service, as such we can test it just like we did before.
+
+I’m not laying out the steps one by one again, but I’ll paste the entire flow.
+
+---
+
+# Troubleshooting: ImagePullBackOff
+
+> [!IMPORTANT]
+> It seems the deployment wasn’t working because, according to ChatGPT, the image format is outdated.
+>
+> I confirmed that there was a problem pulling the image myself without ChatGPT.
+
+## 1. Notice They Aren’t Running
+
 ```bash
 vboxuser@k8s-init:~$ kubectl get pods -o wide
 NAME                       READY   STATUS             RESTARTS   AGE     IP                NODE          NOMINATED NODE   READINESS GATES
 app-one-5d67bcb4f-b8qwn    0/1     ImagePullBackOff   0          14m     192.168.100.199   k8s-worker3   <none>           <none>
 app-two-779c8786f5-fvm7w   0/1     ImagePullBackOff   0          13m     192.168.126.4     k8s-worker2   <none>           <none>
 ```
-2: read logs from both:
+
+## 2. Read Logs From Both
+
 ```bash
 vboxuser@k8s-init:~$ kubectl logs app-one-5d67bcb4f-b8qwn
 Error from server (BadRequest): container "echoserver" in pod "app-one-5d67bcb4f-b8qwn" is waiting to start: trying and failing to pull image
@@ -116,7 +178,8 @@ vboxuser@k8s-init:~$ kubectl logs app-two-779c8786f5-fvm7w
 Error from server (BadRequest): container "echoserver" in pod "app-two-779c8786f5-fvm7w" is waiting to start: trying and failing to pull image
 ```
 
-3: Read the description of one of them:
+## 3. Read the Description of One of Them
+
 ```bash
 kubectl describe pod app-one-5d67bcb4f-b8qwn
 
@@ -131,7 +194,13 @@ Events:
   Normal   BackOff    4m22s (x43 over 14m)  kubelet            Back-off pulling image "k8s.gcr.io/echoserver:1.4"
 ```
 
-So now we need to do aN update on both of them in order to update the image! We have done this before when editing the metric-server to add an additional argument, so we know how to do it again!
+---
+
+## Updating the Image
+
+So now we need to do an update on both of them in order to update the image.
+
+We have done this before when editing the metrics-server to add an additional argument, so we know how to do it again.
 
 ```bash
 kubectl edit deployment app-one
@@ -172,11 +241,12 @@ spec:
         app: app-one
     spec:
       containers:
-      - image: registry.k8s.io/echoserver:1.10 #changed the image source
+      - image: registry.k8s.io/echoserver:1.10 # changed the image source
         imagePullPolicy: IfNotPresent
 ```
 
-Now we can see that this worked!
+Now we can see that this worked:
+
 ```bash
 vboxuser@k8s-init:~$ kubectl get pods -o wide
 NAME                       READY   STATUS             RESTARTS   AGE     IP               NODE          NOMINATED NODE   READINESS GATES
@@ -184,7 +254,7 @@ app-one-7494894cfc-m96w2   1/1     Running            0          5m7s    192.168
 app-two-779c8786f5-fvm7w   0/1     ImagePullBackOff   0          24m     192.168.126.4    k8s-worker2   <none>           <none>
 ```
 
-Now we'll just do the same for the other deployment , but this time we'll do it through a rolling update ( the right way! )
+Now we’ll just do the same for the other deployment, but this time we’ll do it through a rolling update — the right way.
 
 ```bash
 vboxuser@k8s-init:~$ kubectl set image deployment/app-two echoserver=registry.k8s.io/echoserver:1.10
@@ -196,7 +266,11 @@ Waiting for deployment "app-two" rollout to finish: 1 old replicas are pending t
 deployment "app-two" successfully rolled out
 ```
 
-Now that both deployments are updated, lets run a test to see if our Ingress Controller worked:
+---
+
+# Testing After Both Deployments Are Updated
+
+Now that both deployments are updated, let’s run a test to see if our Ingress Controller worked:
 
 ```bash
 vboxuser@k8s-init:~$ kubectl get svc app-one app-two -o wide
@@ -290,13 +364,19 @@ Request Body:
         -no body in request-
 ```
 
-Now i encountered an issue when testing 
+---
+
+# Troubleshooting: ExternalTrafficPolicy
+
+Now I encountered an issue when testing:
 
 ```bash
 curl http://192.168.1.33:32542
 ```
 
-This is due to the fact that the Ingress Controller has its ExternalTrafficPolicy set to 'Local', which means it can only route to the same node its running on. We need to change it to cluster so that it can route to the other node as well:
+This is due to the fact that the Ingress Controller has its `ExternalTrafficPolicy` set to `Local`, which means it can only route to the same node it’s running on.
+
+We need to change it to `Cluster` so that it can route to the other node as well:
 
 ```bash
 kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec":{"externalTrafficPolicy":"Cluster"}}'
@@ -304,7 +384,11 @@ kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec":{"extern
 service/ingress-nginx-controller patched
 ```
 
-Now both of them work!
+Now both of them work.
+
+---
+
+## Working Test Output
 
 ```bash
 curl 192.168.1.33:32542/app1
@@ -342,9 +426,9 @@ Request Headers:
 
 Request Body:
         -no body in request-
-        
-        
-        
+
+
+
 curl 192.168.1.35:32542/app2
 
 
@@ -382,6 +466,18 @@ Request Body:
         -no body in request-
 ```
 
+---
 
+# Gateway API
 
-Gateway API
+Gateway API is the next generation of Ingress: more flexible and role-oriented.
+
+It decouples configuration into three resource types:
+
+| Resource | Role | Description |
+|---|---|---|
+| GatewayClass | Admin | A template for a type of load-balancer. |
+| Gateway | Operator | Defines where and how the load-balancer listens. |
+| HTTPRoute | Developer | Defines protocol-specific routing rules. |
+
+This separation of rules enhances security and modularity.
