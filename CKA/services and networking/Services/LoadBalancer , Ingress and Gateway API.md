@@ -1,3 +1,5 @@
+# LoadBalancers, Ingress, and Gateway API
+
 ## LoadBalancers
 
 - Exposes the Service externally using a cloud provider’s LoadBalancer.
@@ -7,9 +9,9 @@
 
 ---
 
-# Ingress & Gateway API
+## Ingress & Gateway API
 
-## Overview
+### Overview
 
 Ingress and Gateway API manage external access more efficiently than LoadBalancer services.
 
@@ -17,9 +19,9 @@ They provide **L7 (HTTP/HTTPS) routing**.
 
 ---
 
-# Ingress
+## Ingress
 
-## What Ingress Does
+### What Ingress Does
 
 Ingress manages external access and provides:
 
@@ -37,7 +39,7 @@ The controller watches for Ingress resources and configures the proxy accordingl
 
 ---
 
-## Creating an Ingress for Path-Based Routing
+### Creating an Ingress for Path-Based Routing
 
 Now let’s create an Ingress for our services in order to make use of path-based routing.
 
@@ -49,7 +51,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 
 ---
 
-## Creating Two Applications
+### Creating Two Applications
 
 Now we’ll create two applications.
 
@@ -65,7 +67,7 @@ kubectl expose deployment app-two --port=8080
 
 ---
 
-## Creating the Ingress Resource
+### Creating the Ingress Resource
 
 Now we’ll create an Ingress Resource where we will define our routing rules.
 
@@ -81,22 +83,22 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - http:
-      paths:
-      - path: /app1
-        pathType: Prefix
-        backend:
-          service:
-            name: app-one
-            port:
-              number: 8080
-      - path: /app2
-        pathType: Prefix
-        backend:
-          service:
-            name: app-two
-            port:
-              number: 8080
+    - http:
+        paths:
+          - path: /app1
+            pathType: Prefix
+            backend:
+              service:
+                name: app-one
+                port:
+                  number: 8080
+          - path: /app2
+            pathType: Prefix
+            backend:
+              service:
+                name: app-two
+                port:
+                  number: 8080
 ```
 
 The tutorial changes the name of the Resource, adds the annotations part, and changes the paths to work with our example.
@@ -116,22 +118,22 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - http:
-      paths:
-      - path: /app1
-        pathType: Prefix
-        backend:
-          service:
-            name: app-one
-            port:
-              number: 8080
-      - path: /app2
-        pathType: Prefix
-        backend:
-          service:
-            name: app-two
-            port:
-              number: 8080
+    - http:
+        paths:
+          - path: /app1
+            pathType: Prefix
+            backend:
+              service:
+                name: app-one
+                port:
+                  number: 8080
+          - path: /app2
+            pathType: Prefix
+            backend:
+              service:
+                name: app-two
+                port:
+                  number: 8080
 ```
 
 Apply the Ingress resource:
@@ -142,7 +144,7 @@ kubectl apply -f ingress.yaml
 
 ---
 
-## Testing the Ingress
+### Testing the Ingress
 
 Now we need to test it.
 
@@ -152,14 +154,14 @@ I’m not laying out the steps one by one again, but I’ll paste the entire flo
 
 ---
 
-# Troubleshooting: ImagePullBackOff
+## Troubleshooting: ImagePullBackOff
 
 > [!IMPORTANT]
 > It seems the deployment wasn’t working because, according to ChatGPT, the image format is outdated.
 >
 > I confirmed that there was a problem pulling the image myself without ChatGPT.
 
-## 1. Notice They Aren’t Running
+### 1. Notice They Aren’t Running
 
 ```bash
 vboxuser@k8s-init:~$ kubectl get pods -o wide
@@ -168,7 +170,7 @@ app-one-5d67bcb4f-b8qwn    0/1     ImagePullBackOff   0          14m     192.168
 app-two-779c8786f5-fvm7w   0/1     ImagePullBackOff   0          13m     192.168.126.4     k8s-worker2   <none>           <none>
 ```
 
-## 2. Read Logs From Both
+### 2. Read Logs From Both
 
 ```bash
 vboxuser@k8s-init:~$ kubectl logs app-one-5d67bcb4f-b8qwn
@@ -178,7 +180,7 @@ vboxuser@k8s-init:~$ kubectl logs app-two-779c8786f5-fvm7w
 Error from server (BadRequest): container "echoserver" in pod "app-two-779c8786f5-fvm7w" is waiting to start: trying and failing to pull image
 ```
 
-## 3. Read the Description of One of Them
+### 3. Read the Description of One of Them
 
 ```bash
 kubectl describe pod app-one-5d67bcb4f-b8qwn
@@ -196,7 +198,7 @@ Events:
 
 ---
 
-## Updating the Image
+### Updating the Image
 
 So now we need to do an update on both of them in order to update the image.
 
@@ -241,8 +243,8 @@ spec:
         app: app-one
     spec:
       containers:
-      - image: registry.k8s.io/echoserver:1.10 # changed the image source
-        imagePullPolicy: IfNotPresent
+        - image: registry.k8s.io/echoserver:1.10 # changed the image source
+          imagePullPolicy: IfNotPresent
 ```
 
 Now we can see that this worked:
@@ -268,7 +270,7 @@ deployment "app-two" successfully rolled out
 
 ---
 
-# Testing After Both Deployments Are Updated
+## Testing After Both Deployments Are Updated
 
 Now that both deployments are updated, let’s run a test to see if our Ingress Controller worked:
 
@@ -366,7 +368,7 @@ Request Body:
 
 ---
 
-# Troubleshooting: ExternalTrafficPolicy
+## Troubleshooting: ExternalTrafficPolicy
 
 Now I encountered an issue when testing:
 
@@ -388,7 +390,7 @@ Now both of them work.
 
 ---
 
-## Working Test Output
+### Working Test Output
 
 ```bash
 curl 192.168.1.33:32542/app1
@@ -468,7 +470,7 @@ Request Body:
 
 ---
 
-# Gateway API
+## Gateway API
 
 Gateway API is the next generation of Ingress: more flexible and role-oriented.
 
