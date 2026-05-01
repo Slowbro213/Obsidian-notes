@@ -209,8 +209,10 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKA/Preparation Progress.md",
+    "CKA/Useful notes/Untitled.md",
+    "Untitled.md",
     "CKA/services and networking/CoreDNS.md",
+    "CKA/Preparation Progress.md",
     "CKA/services and networking/NetworkPolicy.md",
     "CKA/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
     "CKA/services and networking/Networking.md",
@@ -240,7 +242,6 @@
     "Untitled.base",
     "CKA/k8s lifecycle management",
     "Welcome.md",
-    "CKA/k8s lab setup",
-    "create a link.md"
+    "CKA/k8s lab setup"
   ]
 }
