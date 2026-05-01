@@ -1,4 +1,3 @@
-
 Act as a firewall for pods, controlling the traffic at the IP and port level.
 
 - By default, all Pods can communicate with all other Pods.
