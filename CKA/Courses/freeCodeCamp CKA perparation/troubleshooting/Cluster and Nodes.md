@@ -1,0 +1,1 @@
+If applications are failing cluster-wide, the problem might be with the nodes or the control plane itself. Nodes can be in several states. the most common problematic states are NotReady and SchedulingDisabled.

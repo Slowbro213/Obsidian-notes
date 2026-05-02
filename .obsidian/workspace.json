@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Applications and Pods.md",
+                "file": "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Cluster and Nodes.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Applications and Pods"
+              "title": "Cluster and Nodes"
             }
           }
         ]
@@ -207,10 +207,10 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "074ae27ddbedaa5d",
+  "active": "86694d53997a7a86",
   "lastOpenFiles": [
-    "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Cluster and Nodes.md",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Applications and Pods.md",
+    "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Cluster and Nodes.md",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Methodology.md",
     "CKA/Courses/Preparation Progress.md",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
