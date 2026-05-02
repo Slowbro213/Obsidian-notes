@@ -7,6 +7,6 @@
 Kubernetes Course – Certified Kubernetes Administrator Exam Preparation (2026 Update)
 
 **Progress**  
-75%
+100%
 
 ---
