@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKA/Courses/Preparation Progress.md",
+                "file": "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Applications and Pods.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Preparation Progress"
+              "title": "Applications and Pods"
             }
           }
         ]
@@ -207,10 +207,14 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "c172ba13c193321d",
+  "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKA/Courses/freeCodeCamp CKA perparation/Progress.md",
+    "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Cluster and Nodes.md",
+    "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Applications and Pods.md",
+    "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting/Methodology.md",
     "CKA/Courses/Preparation Progress.md",
+    "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
+    "CKA/Courses/freeCodeCamp CKA perparation/Progress.md",
     "CKA/Courses/freeCodeCamp CKA perparation",
     "CKA/Courses",
     "CKA/Courses/freeCodeCamp CKA perparation/workflows/Autoscaling workloads.md",
@@ -237,13 +241,9 @@
     "CKA/Courses/freeCodeCamp CKA perparation/lab setup/Control Plane Node.md",
     "CKA/Courses/freeCodeCamp CKA perparation/storage",
     "CKA/Useful notes/Untitled.md",
-    "Untitled.md",
-    "CKA/services and networking/Networking.md",
-    "CKAD/services and networking/Services.md",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking",
     "CKA/Courses/freeCodeCamp CKA perparation/workflows",
-    "CKA",
-    "CKA/Courses/freeCodeCamp CKA perparation/Useful notes"
+    "CKA"
   ]
 }
