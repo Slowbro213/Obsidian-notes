@@ -57,7 +57,21 @@ kubectl get pods -A
 ### Create a pod with image nginx called nginx and expose traffic on port 80
 
 ```bash
-kubectl run nginx --image=nginx --restart=Never --port=80
+kubectl run nginx --image=nginx --restart=Never --port=80 -n myns
 ```
 
 ### Change pod's image to nginx:1.24.0. Observe that the container will be restarted as soon as the image gets pulled
+```bash
+kubectl set image pod/nginx nginx=nginx:1.24.0 -n myns
+kubectl describe pod nginx -n myns
+```
+### Get nginx pod's ip created in previous step, use a temp busybox image to wget its '/'
+```bash
+kubectl get pod nginx -n myns -o jsonpath={.status.podIP}
+10.244.0.3%                                                                     kubectl run busybox -n myns --restart=Never --image=busybox -it --rm --command -- wget -O- 10.244.0.3
+```
+
+### Get pod's YAML
+```bash
+❯ kubectl get pod nginx -n myns -o yaml
+```
