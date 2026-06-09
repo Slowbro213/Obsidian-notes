@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/Practice questions/Multi container pods.md",
+                "file": "CKAD/Practice questions/Pod Design.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Multi container pods"
+              "title": "Pod Design"
             }
           }
         ]
@@ -209,10 +209,11 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKAD/Practice questions/Core Concepts.md",
-    "CKAD/Practice questions/Multi container pods.md",
-    "CKAD/Practice questions/Useful Docs References.md",
     "CKAD/Practice questions/Playground for testing.md",
+    "CKAD/Practice questions/Multi container pods.md",
+    "CKAD/Practice questions/Core Concepts.md",
+    "CKAD/Practice questions/Pod Design.md",
+    "CKAD/Practice questions/Useful Docs References.md",
     "CKA/Courses/freeCodeCamp CKA perparation/lab setup/Worker Nodes.md",
     "CKAD/Practice questions",
     "CKAD",
@@ -237,7 +238,6 @@
     "CKA/Courses/freeCodeCamp CKA perparation/lifecycle management/HA Control Plane.md",
     "CKA/Courses/freeCodeCamp CKA perparation/lifecycle management/Backing up and restoring etcd.md",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
-    "CKA/Courses/freeCodeCamp CKA perparation/Progress.md",
     "CKA/Courses/freeCodeCamp CKA perparation",
     "CKA/Courses",
     "Bases/YAML.base",
