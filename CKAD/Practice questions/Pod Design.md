@@ -211,3 +211,300 @@ status: {}
 > 
 > This ensures the pod is scheduled only on nodes matching that label.
 
+---
+### Create a pod that will be placed on node `node01` using `nodeName`
+```bash
+❯ kubectl run nginx --image=nginx -n myns --restart=Never --dry-run=client -o yaml > nginx-nodeName.yaml
+❯ vim nginx-nodeName.yaml # Edit the pod to include nodeName
+❯ cat nginx-nodeName.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+  namespace: myns
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  nodeName: minikube
+status: {}
+❯ kubectl create -f nginx-nodeName.yaml
+```
+
+---
+### Taint a node with key `tier` and value `frontend` with the effect `NoSchedule`. Then, create a pod that tolerates this taint.
+```bash
+kubectl taint node minikube tier=frontend:NoSchedule
+❯ kubectl run nginx --image=nginx -n myns --restart=Never --dry-run=client -o yaml > nginx-tolerant.yaml
+vim nginx-tolerant.yaml # edit the yaml to include the toleration
+cat nginx-tolerant.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+  tolerations:
+  - key: "tier"
+    operator: "Equal"
+    value: "frontend"
+    effect: "NoSchedule"
+    
+status: {}
+kubectl create nginx-tolerant.yaml
+```
+>[!NOTE]
+>You write tolerations like so:
+>```yaml
+>tolerations:
+>- key: "tier"
+>   operator: "Equal"
+>   value: "frontend"
+>   effect: "NoSchedule"
+>```
+
+---
+### Create a pod that will be placed on node `controlplane`. Use nodeSelector and tolerations.
+```bash
+❯ kubectl run nginx --image=nginx -n myns --restart=Never --dry-run=client -o yaml > nginx-nodeSelector-taint.yaml
+❯ vim nginx-nodeSelector-taint.yaml # edit the yaml to add nodeSelector and toleration
+❯ cat nginx-nodeSelector-taint.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+  namespace: myns
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  nodeSelector:
+    kubernetes.io/hostname: controlplane
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+status: {}
+❯ kubectl create -f nginx-nodeSelector-taint.yaml
+```
+>[!NOTE]
+>nodeSelecting on hostnames is done by using the `kubernetes.io/hostname` key, and providing tolerations for the controlplane taint is done by ( this can be found in the docs ) `node-role.kubernetes.io/control-plane` and the operator `Exists`
+
+---
+### Create a deployment with image nginx:1.18.0, called nginx, having 2 replicas, defining port 80 as the port that this container exposes (don't create a service for this deployment)
+```bash
+❯ kubectl create deployment nginx --image=nginx:1.18.0 --replicas=2 --dry-run=client -o yaml > deploy-nginx.yaml
+❯ vim deploy-nginx.yaml
+❯ cat deploy-nginx.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx
+  name: nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx:1.18.0
+        name: nginx
+        resources: {}
+        ports:
+        - containerPort: 80
+status: {}
+❯ kubectl apply -f deploy-nginx.yaml
+deployment.apps/nginx created
+```
+>[!NOTE]
+>You can specify the port of a container via:
+>```yaml
+>ports:
+>- containerPort: <port>
+>```
+>This can be easily found on the kubernetes docs
+
+---
+### View the YAML of this deployment
+```bash
+kubectl get deploy nginx -o yaml
+```
+---
+### View the YAML of the replica set that was created by this deployment
+```bash
+kubectl describe deploy nginx
+❯ kubectl get rs nginx-7b4cd9f47b -o yaml
+```
+>[!NOTE]
+>You can view the replicaset a deployment has created by the `Events` or `NewReplicaSet` section when using `describe`
+
+---
+### Get the YAML for one of the pods
+```bash
+❯ kubectl describe rs nginx-7b4cd9f47b
+...
+Events:
+  Type    Reason            Age    From                   Message
+  ----    ------            ----   ----                   -------
+  Normal  SuccessfulCreate  7m46s  replicaset-controller  Created pod: nginx-7b4cd9f47b-x5lxp
+  Normal  SuccessfulCreate  7m46s  replicaset-controller  Created pod: nginx-7b4cd9f47b-6c9ck
+❯ kubectl get pod nginx-7b4cd9f47b-x5lxp -o yaml
+```
+---
+### Check how the deployment rollout is going
+```bash
+❯ kubectl rollout status deployment nginx
+deployment "nginx" successfully rolled out
+```
+---
+### Update the nginx image to nginx:1.19.8
+```bash
+❯ kubectl set image deploy/nginx nginx=nginx1.19.8
+deployment.apps/nginx image updated
+```
+---
+### Check the rollout history and confirm that the replicas are OK
+
+```bash
+❯ kubectl rollout status deployment nginx
+Waiting for deployment "nginx" rollout to finish: 1 out of 2 new replicas have been updated... # wait for both replicas to be updated , then check the history and the replicas and the pods
+kubectl rollout history deployment nginx
+kubectl get rs
+kubectl get pod
+```
+---
+### Undo the latest rollout and verify that new pods have the old image (nginx:1.18.0)
+```bash
+❯ kubectl describe deploy nginx
+❯ kubectl describe rs nginx-7b4cd9f47b
+❯ kubectl get pod nginx-7b4cd9f47b-x5lxp -o yaml
+...
+spec:
+  containers:
+  - image: nginx:1.18.0
+```
+---
+### Do an on-purpose update of the deployment with a wrong image nginx:1.91
+```bash
+kubectl set image deploy/nginx nginx=nginx:1.91
+```
+---
+### Verify that something's wrong with the rollout
+```bash
+kubectl rollout status deploy nginx
+kubectl logs <pod>
+```
+---
+### Return the deployment to the second revision (number 2) and verify the image is nginx:1.19.8
+```bash
+kubectl rollout undo deployment nginx --to-revision=2
+kubectl describe deploy nginx | grep Image:
+kubectl rollout status deploy nginx
+```
+>[!NOTE]
+>With the command `kubectl rollout undo deployment <deploy>` you can add the `--to-revision=x` flag to specify the revision of the rollout
+
+---
+### Check the details of the fourth revision (number 4)
+```bash
+kubectl rollout history deployment nginx --revision=4
+```
+>[!NOTE]
+>`kubectl rollout history` gives you a list of revisions. You can specify which revision you want the details of with the flag `--revision=x`
+
+---
+### Scale the deployment to 5 replicas
+```bash
+kubectl edit deployment nginx # edit the replicas to five
+# or
+❯ kubectl scale --replicas=5 deployment nginx
+```
+>[!NOTE]
+>Use the `kubectl scale deployment <deploy> --replicas=x` to scale up or down the deployment
+
+---
+### Autoscale the deployment, pods between 5 and 10, targeting CPU utilization at 80%
+```bash
+❯ kubectl autoscale deployment nginx --cpu-percent=80 --min=5 --max=10
+```
+>[!NOTE]
+>I didnt remember how to do this but the kubernetes docs and `kubectl autoscale --help` was really helpful
+
+>[!IMPORTANT]
+>USE `kubectl <command> --help` WHEN IN DOUBT!!!
+
+---
+### Pause the rollout of the deployment
+```bash
+❯ kubectl rollout pause deployment nginx
+```
+---
+### Update the image to nginx:1.19.9 and check that there's nothing going on, since we paused the rollout
+```bash
+❯ kubectl set image deployment/nginx nginx=nginx:1.19.9
+❯ kubectl rollout status deployment nginx
+❯ kubectl rollout history deploy nginx
+```
+---
+### Resume the rollout and check that the nginx:1.19.9 image has been applied
+```bash
+❯ kubectl rollout resume deploy nginx
+deployment.apps/nginx resumed
+❯ kubectl rollout status deployment nginx
+Waiting for deployment "nginx" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "nginx" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "nginx" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "nginx" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "nginx" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "nginx" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "nginx" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "nginx" rollout to finish: 2 old replicas are pending termination...
+Waiting for deployment "nginx" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "nginx" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "nginx" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "nginx" rollout to finish: 1 old replicas are pending termination...
+deployment "nginx" successfully rolled out
+❯ kubectl rollout history deploy nginx
+deployment.apps/nginx
+REVISION  CHANGE-CAUSE
+2         <none>
+3         <none>
+4         <none>
+5         <none>
+```
+---
+### Delete the deployment and the horizontal pod autoscaler you created
+```bash
+❯ kubectl delete deployment nginx
+deployment.apps "nginx" deleted
+❯ kubectl delete hpa nginx
+horizontalpodautoscaler.autoscaling "nginx" deleted
+```
+>[!NOTE]
+>HPAs are their own resource, you need to specifically delete them
+
+---
+### Implement canary deployment by running two instances of nginx marked as version=v1 and version=v2 so that the load is balanced at 75%-25% ratio
