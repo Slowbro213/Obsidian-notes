@@ -508,3 +508,475 @@ horizontalpodautoscaler.autoscaling "nginx" deleted
 
 ---
 ### Implement canary deployment by running two instances of nginx marked as version=v1 and version=v2 so that the load is balanced at 75%-25% ratio
+```bash
+# This is a bit complicated
+kubectl create deployment my-app-v1 --image=nginx --replicas=3 --dry-run=client -o yaml > version1.yaml
+vim version1.yaml # Here we edit the version1.yaml to change the label of the deployment. the label becomes my-app and the deployment is edited to print 'Test' when a request is sent  
+cp version1.yaml version2.yaml
+vim version2.yaml # Same thing here but the request prints 'Test2' and replicas is set to 1
+kubectl create -f version1.yaml
+kubectl create -f version2.yaml
+kubectl expose deployment my-app-v2 --port=80 --dry-run=client -o yaml > myapp-service.yaml
+vim myapp-service.yaml # here we edit the service to use the my-app label
+kubectl create -f myapp-service.yaml
+kubectl run busybox --image=busybox --restart=Never -it --rm --command -- /bin/sh -c 'while true; do wget -qO- my-app; sleep 1; done'
+Test2
+Test
+Test
+Test2
+Test
+Test
+Test
+Test
+Test
+# Here we can see the requests are being load balanced roughly in a 75%-25% manner
+kubectl scale deployment my-app-v2 --replicas=4
+kubectl scale deployment my-app-v1 --replicas=0
+# Watch the deployments finish then confirm with the busybox command traffic is only being served by version 2
+kubectl delete deployment my-app-v1
+```
+Yamls:
+```yaml
+# service
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: my-app
+  name: my-app
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: my-app
+status:
+  loadBalancer: {}
+```
+
+```yaml
+# version 1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: my-app
+    version: v1
+  name: my-app-v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: v2
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+        volumeMounts:
+        - name: vol
+          mountPath: "/usr/share/nginx/html"
+      initContainers:
+      - image: busybox
+        name: init-box
+        resources: {}
+        command: ["/bin/sh" , "-c" , 'echo "Test" > /work-dir/index.html']
+        volumeMounts:
+        - name: vol
+          mountPath: "/work-dir"
+      volumes:
+      - name: vol
+        emptyDir: {}
+status: {}
+```
+
+```yaml
+# version 2
+❯ cat version2.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: my-app
+    version: v2
+  name: my-app-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+      version: v2
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+        volumeMounts:
+        - name: vol
+          mountPath: "/usr/share/nginx/html"
+      initContainers:
+      - image: busybox
+        name: init-box
+        resources: {}
+        command: ["/bin/sh" , "-c" , 'echo "Test2" > /work-dir/index.html']
+        volumeMounts:
+        - name: vol
+          mountPath: "/work-dir"
+      volumes:
+      - name: vol
+        emptyDir: {}
+status: {}
+```
+
+>[!NOTE]
+>REMEMBER TO PLACE THE VERSION OF THE DEPLOYMENTS UNDER METADATA AND TEMPLATE!!
+
+
+>[!EXPLANATION]
+>So we first create a simple deployment with 3 replicas and treat that as version 1. then we edit that deployment to do the following:
+>- Change the label to one it will share with version 2
+>- Add an emptyDir volume and an initContainer. the volume will be shared between the nginx container and the initContainer. The initContainer will serve to create the index.html file with "Test" in it that the nginx container will then serve. the same volume will then be mounted to the nginx container with the path `/usr/share/nginx/html` so that the index.html file created previously will be somewhere nginx can find and serve on request
+>- Copy everything we did to version 1 and do that with version 2, but set the replicas to 1 , change the name of the deployment ( but not the label ) and then change "Test" to "Test2" so that responses to  requests can be identified by the version that served them.
+>- Expose one of the deployments in order to create a service that will route to the label shared by both deployments
+>- Create a busybox container with a shell that will send requests to the newly created service and will show the output in order to confirm the load balancing is as expected.
+>- Scale up version 2 to 4 replicas
+>- Scale down version 1 to 0 replicas
+>- Delete version 1
+>- Confirm the version deployment occured as expected
+
+---
+### Create a job named pi with image perl:5.34 that runs the command with arguments "perl -Mbignum=bpi -wle 'print bpi(2000)'"
+```bash
+#This can be found verbatim in the kubernetes docs, but im going to avoid copying and pasting in order to learn how to do it from the command line from memory since thats faster
+❯ kubectl create job pi --image=perl:5.34 -- /bin/bash -c "perl -Mbignum=bpi -wle 'print bpi(2000)'"
+# Somehow i managed to guess this correctly! Yay me!
+```
+---
+### Wait till it's done, get the output
+```bash
+❯ kubectl get job pi -w # Wait until its done ( this one i had to look up, i thought maybe rollout status would work since its a workflow and it works for deployments )
+NAME   STATUS     COMPLETIONS   DURATION   AGE
+pi     Complete   1/1           15s        112s
+❯ kubectl describe job pi # Find out the pod it created
+❯ kubectl logs pi-cfsnm # Get the logs of that pod
+3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803...
+❯ kubectl delete job pi # Unsure if this step is needed, the previous i did myself but this one was in the answers
+```
+---
+### Create a job with the image busybox that executes the command 'echo hello;sleep 30;echo world'
+```bash
+kubectl create job busyjob --image=busybox -- /bin/sh -c 'echo hello;sleep 30;echo world'
+```
+---
+### Follow the logs for the pod (you'll wait for 30 seconds)
+```bash
+❯ kubectl describe job busyjob
+❯ kubectl logs busyjob-vm7gq -f
+hello
+world
+```
+---
+### See the status of the job, describe it and see the logs
+```bash
+❯ kubectl get job busyjob -o jsonpath={.status}
+{"completionTime":"2026-06-11T20:14:42Z","conditions":[{"lastProbeTime":"2026-06-11T20:14:42Z","lastTransitionTime":"2026-06-11T20:14:42Z","message":"Reached expected number of succeeded pods","reason":"CompletionsReached","status":"True","type":"SuccessCriteriaMet"},{"lastProbeTime":"2026-06-11T20:14:42Z","lastTransitionTime":"2026-06-11T20:14:42Z","message":"Reached expected number of succeeded pods","reason":"CompletionsReached","status":"True","type":"Complete"}],"ready":0,"startTime":"2026-06-11T20:14:02Z","succeeded":1,"terminating":0,"uncountedTerminatedPods":{}}
+❯ kubectl describe job busyjob
+❯ kubectl logs busyjob-vm7gq -f
+```
+---
+### Delete the job
+```bash
+❯ kubectl delete job busyjob
+job.batch "busyjob" deleted
+```
+---
+### Create the same job, make it run 5 times, one after the other. Verify its status and delete it
+```bash
+❯ kubectl create job busyjob --image=busybox --dry-run=client -o yaml -- /bin/sh -c 'echo hello;sleep 30; echo world' > busyjob.yaml
+❯ vim busyjob.yaml
+❯ cat busyjob.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: busyjob
+spec:
+  completions: 5
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - echo hello;sleep 30; echo world
+        image: busybox
+        name: busyjob
+        resources: {}
+      restartPolicy: Never
+❯ kubectl get job busyjob -w
+NAME      STATUS    COMPLETIONS   DURATION   AGE
+busyjob   Running   0/5           15s        15s
+busyjob   Running   0/5           34s        34s
+busyjob   Running   0/5           35s        35s
+busyjob   Running   1/5           35s        35s
+busyjob   Running   1/5           38s        38s
+...
+busyjob   Running   4/5           2m54s      2m54s
+busyjob   Running   4/5           2m55s      2m55s
+busyjob   Complete   5/5           2m55s      2m55s
+
+❯ kubectl delete job busyjob
+```
+>[!NOTE]
+>You can modify the completions of a job by adding it under the `spec` part of the *resource*
+
+---
+### Create the same job, but make it run 5 parallel times
+```bash
+❯ kubectl create job busyjob --image=busybox --dry-run=client -o yaml -- /bin/sh -c 'echo hello;sleep 30; echo world' > busyjob.yaml
+❯ vim busyjob.yaml
+❯ cat busyjob.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: busyjob
+spec:
+  parallelism: 5
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - echo hello;sleep 30; echo world
+        image: busybox
+        name: busyjob
+        resources: {}
+      restartPolicy: Never
+❯ kubectl create -f busyjob.yaml
+job.batch/busyjob created
+❯ kubectl get job busyjob -w
+NAME      STATUS    COMPLETIONS   DURATION   AGE
+busyjob   Running   0/1 of 5      17s        17s
+busyjob   Running   0/1 of 5      34s        34s
+busyjob   Running   0/1 of 5      35s        35s
+busyjob   Running   1/1 of 5      35s        35s
+busyjob   Running   1/1 of 5      36s        36s
+busyjob   Running   2/1 of 5      36s        36s
+busyjob   Running   2/1 of 5      37s        37s
+busyjob   Running   3/1 of 5      37s        37s
+busyjob   Running   3/1 of 5      38s        38s
+busyjob   Running   3/1 of 5      39s        39s
+busyjob   Running   4/1 of 5      39s        39s
+busyjob   Running   4/1 of 5      40s        40s
+busyjob   Complete   5/1 of 5      40s        40s
+```
+>[!NOTE]
+>Similarly to `completions`, you can specify `parallelism` the same way, by putting it under the `spec` of the resource
+
+---
+### Create a job but ensure that it will be automatically terminated by kubernetes if it takes more than 30 seconds to execute
+```bash
+# This can easily be found in the kubernetes docs
+❯ kubectl create job busyjob --image=busybox --dry-run=client -o yaml -- /bin/sh -c 'echo hello;sleep 30; echo world' > busyjob.yaml
+❯ vim busyjob.yaml # Edit the manifest to add .spec.activeDeadlineSeconds
+❯ cat busyjob.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: busyjob
+spec:
+  activeDeadlineSeconds: 30
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - echo hello;sleep 30; echo world
+        image: busybox
+        name: busyjob
+        resources: {}
+      restartPolicy: Never
+status: {}
+❯ kubectl create -f busyjob.yaml
+job.batch/busyjob created
+```
+---
+### Create a cron job with image busybox that runs on a schedule of "*/1 * * * *" and writes 'date; echo Hello from the Kubernetes cluster' to standard output
+```bash
+❯ kubectl create cronjob busycronjob --image=busybox --schedule='*/1 * * * *' -- /bin/sh -c 'date;echo "Hello from the Kubernetes cluster"'
+❯ kubectl describe cronjob busycronjob
+❯ kubectl logs busycronjob-29686851-6k9qf
+Thu Jun 11 20:51:01 UTC 2026
+Hello from the Kubernetes cluster
+```
+>[!NOTE]
+>Just like you can create `jobs`, you can also create `cronjobs`, which can be run on a schedule
+
+---
+### See its logs and delete it
+```bash
+❯ kubectl describe cronjob busycronjob
+❯ kubectl logs busycronjob-29686851-6k9qf
+Thu Jun 11 20:51:01 UTC 2026
+Hello from the Kubernetes cluster
+❯ kubectl delete cronjob busycronjob
+cronjob.batch "busycronjob" deleted
+```
+---
+### Create the same cron job again, and watch the status. Once it ran, check which job ran by the created cron job. Check the log, and delete the cron job
+```bash
+❯ kubectl create cronjob busycronjob --image=busybox --schedule='*/1 * * * *' -- /bin/sh -c 'date;echo "Hello from the Kubernetes cluster"'
+cronjob.batch/busycronjob created
+❯ kubectl get cronjob busycronjob -w
+NAME          SCHEDULE      TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+busycronjob   */1 * * * *   <none>     False     0        <none>          7s
+busycronjob   */1 * * * *   <none>     False     1        0s              27s
+busycronjob   */1 * * * *   <none>     False     0        8s              35s
+busycronjob   */1 * * * *   <none>     False     1        0s              87s
+❯ kubectl describe cronjob busycronjob
+...
+Events:
+  Type    Reason            Age   From                Message
+  ----    ------            ----  ----                -------
+  Normal  SuccessfulCreate  63s   cronjob-controller  Created job busycronjob-29686856
+  Normal  SawCompletedJob   54s   cronjob-controller  Saw completed job: busycronjob-29686856, condition: Complete
+  Normal  SuccessfulCreate  3s    cronjob-controller  Created job busycronjob-29686857
+❯ kubectl delete cronjob busycronjob
+cronjob.batch "busycronjob" deleted
+```
+---
+### Create a cron job with image busybox that runs every minute and writes 'date; echo Hello from the Kubernetes cluster' to standard output. The cron job should be terminated if it takes more than 17 seconds to start execution after its scheduled time (i.e. the job missed its scheduled time).
+```bash
+❯ kubectl create cronjob busycronjob --image=busybox --dry-run=client -o yaml --schedule='* * * * *' -- /bin/sh -c 'date;echo "Hello from the Kubernetes cluster"' > busyjob.yaml
+❯ vim busyjob.yaml
+❯ cat busyjob.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  creationTimestamp: null
+  name: busycronjob
+spec:
+  startingDeadlineSeconds: 17
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+      name: busycronjob
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - command:
+            - /bin/sh
+            - -c
+            - date;echo "Hello from the Kubernetes cluster"
+            image: busybox
+            name: busycronjob
+            resources: {}
+          restartPolicy: OnFailure
+  schedule: '* * * * *'
+status: {}
+❯ kubectl create -f busyjob.yaml
+cronjob.batch/busycronjob created
+❯ kubectl describe cronjob busycronjob
+Events:
+  Type    Reason            Age                  From                Message
+  ----    ------            ----                 ----                -------
+  Normal  SuccessfulCreate  16m                  cronjob-controller  Created job busycronjob-29686862
+  Normal  SawCompletedJob   16m                  cronjob-controller  Saw completed job: busycronjob-29686862, condition: Complete
+  Normal  SuccessfulCreate  15m                  cronjob-controller  Created job busycronjob-29686863
+  Normal  SawCompletedJob   15m                  cronjob-controller  Saw completed job: busycronjob-29686863, condition: Complete
+  Normal  SuccessfulCreate  14m                  cronjob-controller  Created job busycronjob-29686864
+  Normal  SawCompletedJob   14m                  cronjob-controller  Saw completed job: busycronjob-29686864, condition: Complete
+  Normal  SuccessfulCreate  13m                  cronjob-controller  Created job busycronjob-29686865
+  Normal  SuccessfulDelete  13m                  cronjob-controller  Deleted job busycronjob-29686862
+  Normal  SawCompletedJob   13m                  cronjob-controller  Saw completed job: busycronjob-29686865, condition: Complete
+  Normal  SuccessfulCreate  12m                  cronjob-controller  Created job busycronjob-29686866
+```
+---
+### Create a cron job with image busybox that runs every minute and writes 'date; echo Hello from the Kubernetes cluster' to standard output. The cron job should be terminated if it successfully starts but takes more than 12 seconds to complete execution.
+```bash
+❯ kubectl create cronjob busycronjob --image=busybox --dry-run=client -o yaml --schedule='* * * * *' -- /bin/sh -c 'date;echo "Hello from the Kubernetes cluster"' > busyjob.yaml
+❯ vim busyjob.yaml # add the activeDeadlineSeconds to the jobTemplate
+❯ cat busyjob.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  creationTimestamp: null
+  name: busycronjob
+spec:
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+      name: busycronjob
+    spec:
+      activeDeadlineSeconds: 12
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - command:
+            - /bin/sh
+            - -c
+            - date;echo "Hello from the Kubernetes cluster"
+            image: busybox
+            name: busycronjob
+            resources: {}
+          restartPolicy: OnFailure
+  schedule: '* * * * *'
+status: {}
+❯ kubectl create -f busyjob.yaml
+❯ kubectl describe cronjob busycronjob
+Events:
+  Type    Reason            Age   From                Message
+  ----    ------            ----  ----                -------
+  Normal  SuccessfulCreate  22s   cronjob-controller  Created job busycronjob-29686884
+  Normal  SawCompletedJob   18s   cronjob-controller  Saw completed job: busycronjob-29686884, condition: Complete
+❯ kubectl describe job busycronjob-29686884
+Events:
+  Type    Reason            Age   From            Message
+  ----    ------            ----  ----            -------
+  Normal  SuccessfulCreate  47s   job-controller  Created pod: busycronjob-29686884-4wqlt
+  Normal  Completed         43s   job-controller  Job completed
+❯ kubectl logs busycronjob-29686884-4wqlt
+Thu Jun 11 21:24:02 UTC 2026
+Hello from the Kubernetes cluster
+```
+---
+### Create a job from cronjob.
+```bash
+❯ kubectl create job --from=cronjob/busycronjob busyjob
+job.batch/busyjob created
+```
+>[!NOTE]
+>You can create a job from a cronjob using the `--from=cronjob/<cronjob>` flag
+
