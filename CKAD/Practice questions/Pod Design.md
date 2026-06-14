@@ -232,7 +232,8 @@ spec:
     resources: {}
   dnsPolicy: ClusterFirst
   restartPolicy: Never
-  nodeName: minikube
+  nodeName: minikube # placed minikube instead of node01 here since i dont have
+  # a node named node01
 status: {}
 ❯ kubectl create -f nginx-nodeName.yaml
 ```
