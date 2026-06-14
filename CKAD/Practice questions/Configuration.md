@@ -515,3 +515,188 @@ pod/nginx created
 ```
 >[!NOTE]
 >I expected that under secretKeyRef i'd be using `secretName` instead of `name` due to the use of `secretName` in the volume creation question
+
+---
+### Create a Secret named 'ext-service-secret' in the namespace 'secret-ops'. Then, provide the key-value pair API_KEY=LmLHbYhsgWZwNifiqaRorH8T as literal.
+```bash
+❯ kubectl create ns secret-ops
+❯ kubectl create secret generic ext-service-secret --from-literal=API_KEY=LmLHbYhsgWZwNifiqaRorH8T -n secret-ops --dry-run=client -o yaml > ext-service-secret.yaml
+❯ vim ext-service-secret.yaml
+❯ cat ext-service-secret.yaml
+apiVersion: v1
+data:
+  API_KEY: LmLHbYhsgWZwNifiqaRorH8T # Edit this line
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: ext-service-secret
+  namespace: secret-ops
+❯ kubectl create -f ext-service-secret.yaml
+secret/ext-service-secret created
+```
+>[!NOTE] 
+>Using `--from-literal` when creating a generic secret automatically encodes it with base64. if you want the secret to literally hold a key, you have to create the secret via a yaml file
+
+---
+### Consuming the Secret. Create a Pod named 'consumer' with the image 'nginx' in the namespace 'secret-ops' and consume the Secret as an environment variable. Then, open an interactive shell to the Pod, and print all environment variables.
+```bash
+❯ kubectl run consumer --image=nginx --restart=Never -n secret-ops --dry-run=client -o yaml > nginx-secret-consume.yaml
+❯ vim nginx-secret-consume.yaml
+❯ cat nginx-secret-consume.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: consumer
+  name: consumer
+  namespace: secret-ops
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    resources: {}
+    envFrom:
+    - secretRef:
+        name: ext-service-secret
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+❯ kubectl create -f nginx-secret-consume.yaml
+pod/nginx created
+❯ kubectl exec -it consumer -n secret-ops -- env
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME=nginx
+TERM=xterm
+API_KEY=.b�m�l�fp6'⩤h�
+KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
+KUBERNETES_SERVICE_HOST=10.96.0.1
+KUBERNETES_SERVICE_PORT=443
+KUBERNETES_SERVICE_PORT_HTTPS=443
+KUBERNETES_PORT=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+KUBERNETES_PORT_443_TCP_PORT=443
+NGINX_VERSION=1.31.1
+NJS_VERSION=0.9.9
+NJS_RELEASE=1~trixie
+ACME_VERSION=0.4.1
+PKG_RELEASE=1~trixie
+DYNPKG_RELEASE=1~trixie
+HOME=/root
+```
+---
+### Create a Secret named 'my-secret' of type 'kubernetes.io/ssh-auth' in the namespace 'secret-ops'. Define a single key named 'ssh-privatekey', and point it to the file 'id_rsa' in this directory.
+```bash
+ssh-keygen
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/home/slowking/.ssh/id_ed25519): id_rsa
+...
+❯ kubectl create secret generic my-secret --type='kubernetes.io/ssh-auth' -n secret-ops --from-file=ssh-privatekey=./id_rsa
+secret/my-secret created
+❯ kubectl get secret -n secret-ops my-secret -o jsonpath={.data}
+{"ssh-privatekey":"LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQkc1dmJtVUFBQUFFYm05dVpRQUFBQUFBQUFBQkFBQUFNd0FBQUF0emMyZ3RaVwpReU5UVXhPUUFBQUNDMC9TWE5QaDA0VW1DQVFoQkVOOEM3cmdGRHdMR1RtMzBNeTNybi82S2dTUUFBQUppMUVlbTl0UkhwCnZRQUFBQXR6YzJndFpXUXlOVFV4T1FBQUFDQzAvU1hOUGgwNFVtQ0FRaEJFTjhDN3JnRkR3TEdUbTMwTXkzcm4vNktnU1EKQUFBRUJIN3Z4Wi92cUlLYzlIZUcwN2pWSDZTUkhSdGpJeHRQMjcybElDTlk5RmZMVDlKYzArSFRoU1lJQkNFRVEzd0x1dQpBVVBBc1pPYmZRekxldWYvb3FCSkFBQUFEbk5zYjNkcmFXNW5RRzVwZUc5ekFRSURCQVVHQnc9PQotLS0tLUVORCBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0K"}
+```
+>[!NOTE]
+>When asked to create a secret of a certain type, use the `--type` flag
+
+---
+### Create a Pod named 'consumer' with the image 'nginx' in the namespace 'secret-ops', and consume the Secret as Volume. Mount the Secret as Volume to the path /var/app with read-only access. Open an interactive shell to the Pod, and render the contents of the file.
+```bash
+❯ kubectl run consumer --image=nginx --restart=Never -n secret-ops --dry-run=client -o yaml > consumer-nginx.yaml
+❯ vim consumer-nginx.yaml
+❯ cat consumer-nginx.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: consumer
+  name: consumer
+  namespace: secret-ops
+spec:
+  containers:
+  - image: nginx
+    name: consumer
+    resources: {}
+    volumeMounts:
+    - name: svol
+      mountPath: /var/app
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  volumes:
+  - name: svol
+    secret:
+      secretName: my-secret
+status: {}
+❯ kubectl create -f consumer-nginx.yaml
+pod/consumer created
+❯ kubectl exec -it consumer -n secret-ops -- /bin/bash
+root@consumer:/# cat /var/app
+cat: /var/app: Is a directory
+root@consumer:/# cat /var/app/
+..2026_06_13_20_01_09.2937077254/ ..data/                           ssh-privatekey
+root@consumer:/# cat /var/app/ssh-privatekey
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACC0/SXNPh04UmCAQhBEN8C7rgFDwLGTm30My3rn/6KgSQAAAJi1Eem9tRHp
+vQAAAAtzc2gtZWQyNTUxOQAAACC0/SXNPh04UmCAQhBEN8C7rgFDwLGTm30My3rn/6KgSQ
+AAAEBH7vxZ/vqIKc9HeG07jVH6SRHRtjIxtP272lICNY9FfLT9Jc0+HThSYIBCEEQ3wLuu
+AUPAsZObfQzLeuf/oqBJAAAADnNsb3draW5nQG5peG9zAQIDBAUGBw==
+-----END OPENSSH PRIVATE KEY-----
+root@consumer:/# exit
+exit
+```
+>[!NOTE]
+>For a volume mount to be read only, specify the `readOnly: true` attribute
+
+---
+### See all the service accounts of the cluster in all namespaces
+```bash
+❯ kubectl get serviceaccounts -A
+NAMESPACE         NAME                                          SECRETS   AGE
+default           default                                       0         5d2h
+default           myuser                                        0         6s
+```
+---
+### Create a new serviceaccount called 'myuser'
+```bash
+❯ kubectl create serviceaccount myuser
+serviceaccount/myuser created
+```
+---
+### Create an nginx pod that uses 'myuser' as a service account
+```bash
+❯ vim serviceaccount-nginx.yaml
+❯ cat serviceaccount-nginx.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  serviceAccountName: myuser
+  containers:
+  - image: nginx
+    name: nginx
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+❯ kubectl create -f serviceaccount-nginx.yaml
+pod/nginx created
+```
+>[!NOTE]
+>You can specify the ServiceAccount a pod will use via `.spec.serviceAccountName`
+
+---
+### Generate an API token for the service account 'myuser'
+```bash
+kubectl create token myuser
+```
+>[!NOTE]
+>To create an API token for a given ServiceAccount, use the `create token <serviceaccount>` command
+
