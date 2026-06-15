@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/Practice questions/Observability.md",
+                "file": "CKAD/Practice questions/Services.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Observability"
+              "title": "Services"
             }
           }
         ]
@@ -209,11 +209,12 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKAD/Practice questions/Configuration.md",
+    "CKAD/Practice questions/Multi container pods.md",
+    "CKAD/Practice questions/Services.md",
     "CKAD/Practice questions/Observability.md",
     "CKAD/Practice questions/Pod Design.md",
+    "CKAD/Practice questions/Configuration.md",
     "CKAD/Practice questions/Core Concepts.md",
-    "CKAD/Practice questions/Multi container pods.md",
     "CKAD/Practice questions/Useful Docs References.md",
     "CKAD/Practice questions/Playground for testing.md",
     "CKA/Courses/freeCodeCamp CKA perparation/lab setup/Worker Nodes.md",
@@ -236,7 +237,6 @@
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/Basics.md",
     "CKA/Courses/freeCodeCamp CKA perparation/lifecycle management/Update cluster version.md",
     "CKA/Courses/freeCodeCamp CKA perparation/lifecycle management/RBAC ( Very Important!!!! ).md",
-    "CKA/Courses/freeCodeCamp CKA perparation/lifecycle management/Helm and Kustomize.md",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
     "CKA/Courses/freeCodeCamp CKA perparation",
     "CKA/Courses",
