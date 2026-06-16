@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/Practice questions/State.md",
+                "file": "CKAD/Practice questions/Helm.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "State"
+              "title": "Helm"
             }
           }
         ]
@@ -209,8 +209,9 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
-    "CKAD/Practice questions/Observability.md",
     "CKAD/Practice questions/State.md",
+    "CKAD/Practice questions/Helm.md",
+    "CKAD/Practice questions/Observability.md",
     "CKAD/Practice questions/Configuration.md",
     "CKAD/Practice questions/Pod Design.md",
     "CKAD/Practice questions/Services.md",
@@ -236,7 +237,6 @@
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/ClusterIP and NodePort.md",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/Basics.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/lifecycle management/Update cluster version.md",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
     "CKA/Courses/freeCodeCamp CKA perparation",
     "CKA/Courses",
