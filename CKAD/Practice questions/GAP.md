@@ -469,4 +469,52 @@ pod/multi created
 >`nginx` writes its access logs to `/var/log/nginx/access.log`
 
 ---
-### Create a pod with an `ambassador` container pattern. The main `busybox` container connects to `localhost:6379`. An ambassador container (`haproxy` or a simple `socat` busybox) forwards that traffic to an external service. Demonstrate the concept using a socat ambassador that forwards `localhost:6379` to `google.com:80`.
+### Create a pod with an init container that puts custom content into a shared volume, and a main nginx container that serves the cloned content.
+```bash
+❯ kubectl run nginx --image=nginx --restart=Never --port=80 --dry-run=client -o yaml > nginx.yaml
+❯ vim nginx.yaml
+❯ cat nginx.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    ports:
+    - containerPort: 80
+    resources: {}
+    volumeMounts:
+    - name: vol
+      mountPath: /usr/share/nginx/html
+  initContainers:
+  - image: nginx
+    name: init
+    command: ['/bin/sh' , '-c' , 'echo "Hello World!" > /work-dir/index.html']
+    volumeMounts:
+    - name: vol
+      mountPath: /work-dir
+  volumes:
+  - name: vol
+    emptyDir: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+❯ kubectl create -f nginx.yaml
+pod/nginx created
+❯ kubectl get pod nginx -o wide
+NAME    READY   STATUS    RESTARTS   AGE   IP             NODE       NOMINATED NODE   READINESS GATES
+nginx   1/1     Running   0          10s   10.244.0.106   minikube   <none>           <none>
+❯ kubectl run busybox --image=busybox --restart=Never -it --rm --command -- /bin/sh -c 'wget -O- 10.244.0.106'
+Connecting to 10.244.0.106 (10.244.0.106:80)
+writing to stdout
+Hello World!
+-                    100% |********************************|    13  0:00:00 ETA
+written to stdout
+pod "busybox" deleted
+```
+---

@@ -133,3 +133,11 @@ pod "busybox" deleted
 >     
 > 
 > This allows nginx to serve the file created by the init container.
+
+---
+>[!IMPORTANT]
+>The `ambassador` pattern has to do with a multi container scenario, such that one of the containers works a proxy for the others requests, so that the main app container doesnt need to worry about service discovery
+
+>[!IMPORTANT]
+> The `adapter` pattern has to do with the use of a container in order to format the output of another container.
+
