@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CKAD/Practice questions/Multi container pods.md",
+                "file": "CKAD/Practice questions/GAP.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Multi container pods"
+              "title": "GAP"
             }
           }
         ]
@@ -209,6 +209,7 @@
   },
   "active": "074ae27ddbedaa5d",
   "lastOpenFiles": [
+    "CKAD/Practice questions/Multi container pods.md",
     "CKAD/Practice questions/GAP.md",
     "CKAD/Practice questions/Pod Design.md",
     "CKAD/Practice questions/Services.md",
@@ -234,7 +235,6 @@
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/ClusterIP and NodePort.md",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/Basics.md",
     "CKA/Courses/freeCodeCamp CKA perparation/lifecycle management/Update cluster version.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/lifecycle management/RBAC ( Very Important!!!! ).md",
     "CKAD/Practice questions",
     "CKAD",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",

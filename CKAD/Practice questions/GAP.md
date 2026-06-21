@@ -518,3 +518,92 @@ written to stdout
 pod "busybox" deleted
 ```
 ---
+### Create an nginx pod with a `startupProbe` that checks `GET /` on port 80, with a `failureThreshold` of 30 and `periodSeconds` of 10 (giving the container up to 5 minutes to start). Also add a `livenessProbe` on the same endpoint.
+```bash
+❯ kubectl run nginx --image=nginx --restart=Never --port=80 --dry-run=client -o yaml > nginx.yaml
+❯ vim nginx.yaml
+❯ cat nginx.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    ports:
+    - containerPort: 80
+    resources: {}
+    startupProbe:
+      failureThreshold: 30
+      periodSeconds: 10
+      httpGet:
+        port: 80
+        path: /
+    livenessProbe:
+      httpGet:
+        port: 80
+        path: /
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+❯ kubectl create -f nginx.yaml
+```
+>[!NOTE]
+>You can specify the number of failures allowed for the startup of a container via `startupProbe.failureThreshold`
+
+>[!NOTE]
+>`periodSeconds` on a `startupProbe` specifies the amount of time between each `startupProbe`
+
+---
+### Create a busybox pod that intentionally delays its readiness (using `sleep 20` in an init container). Add a `startupProbe` that runs `ls /tmp/ready` and a `readinessProbe` that does the same. Create the file `/tmp/ready` after 20 seconds via an init container. Observe the pod lifecycle.
+```bash
+❯ kubectl run nginx --image=nginx --restart=Never --port=80 --dry-run=client -o yaml > nginx.yaml
+❯ vim nginx.yaml
+❯ cat nginx.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  initContainers:
+  - image: busybox
+    name: init
+    command: ['/bin/sh', '-c' , 'sleep 20 && touch /tmp/ready']
+  containers:
+  - image: nginx
+    name: nginx
+    ports:
+    - containerPort: 80
+    resources: {}
+    startupProbe:
+      exec:
+        command: ['ls', '/tmp/ready']
+    readinessProbe:
+      exec:
+        command: ['ls', '/tmp/ready']
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+❯ kubectl create -f nginx.yaml
+	pod/nginx created`
+❯ kubectl get pod nginx
+NAME    READY   STATUS     RESTARTS   AGE
+nginx   0/1     Init:0/1   0          8s
+❯ kubectl get pod nginx
+NAME    READY   STATUS            RESTARTS   AGE
+nginx   0/1     PodInitializing   0          23s
+❯ kubectl get pod nginx
+NAME    READY   STATUS    RESTARTS   AGE
+nginx   0/1     Running   0          26s
+❯ kubectl get pod nginx
+NAME    READY   STATUS    RESTARTS   AGE
+nginx   0/1     Running   0          28s
+```
+---
