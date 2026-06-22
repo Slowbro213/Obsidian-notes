@@ -1256,6 +1256,6 @@ spec:
 >     namespaceSelector:
 > 	   matchLabels:
 > 		   kubernetes.io/metadata.name: monitoring
-
 >```
 
+---
