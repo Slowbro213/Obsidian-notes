@@ -1233,3 +1233,29 @@ spec:
 ```
 >[!NOTE]
 >I did this all on my own in 8 minutes!
+
+>[!IMPORTANT]
+>When writing `netpol`'s , keep in mind the following. Lets say you need to allow ingress from either pods with `app=frontend`, or pods in the namespace `monitoring`, an OR yaml definition would be:
+>```yaml
+>ingress:
+>- from:
+>   - podSelector:
+> 	   matchLabels:
+> 		   app: frontend
+>   - namespaceSelector:
+> 	   matchLabels:
+> 		   kubernetes.io/metadata.name: monitoring
+>```
+>while an AND definition would be
+>```yaml
+>ingress:
+>- from:
+>   - podSelector:
+> 	  matchLabels:
+> 		  app: frontend
+>     namespaceSelector:
+> 	   matchLabels:
+> 		   kubernetes.io/metadata.name: monitoring
+
+>```
+
