@@ -1040,11 +1040,12 @@ There is also a namespace called **`monitoring`** with pods labelled:
 purpose: monitoring
 ```
 
-## Task
+
+Task
 
 Create **one or more NetworkPolicies** that enforce all of the following:
 
-### 1. API ingress
+ 1. API ingress
 
 Pods labelled `app=api` must accept ingress **only** from:
 
@@ -1053,7 +1054,7 @@ Pods labelled `app=api` must accept ingress **only** from:
 
 No other ingress to API pods should be allowed.
 
-### 2. API egress
+2. API egress
 
 Pods labelled `app=api` must be allowed to send egress **only** to:
 
@@ -1062,7 +1063,7 @@ Pods labelled `app=api` must be allowed to send egress **only** to:
 
 No other egress from API pods should be allowed.
 
-### 3. Database ingress
+3. Database ingress
 
 Pods labelled `app=database` must accept ingress **only** from:
 
@@ -1071,7 +1072,7 @@ Pods labelled `app=database` must accept ingress **only** from:
 
 No other ingress to database pods should be allowed.
 
-### 4. Metrics ingress
+4. Metrics ingress
 
 Pods labelled `app=metrics` must accept ingress **only** from:
 
@@ -1081,7 +1082,7 @@ Pods labelled `app=metrics` must accept ingress **only** from:
 
 No other ingress to metrics pods should be allowed.
 
-### 5. Frontend egress
+ 5. Frontend egress
 
 Pods labelled `app=frontend` must be allowed to send egress **only** to:
 
