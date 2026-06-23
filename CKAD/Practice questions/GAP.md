@@ -1260,3 +1260,262 @@ spec:
 >```
 
 ---
+
+### Create a basic Kustomize setup. Write a base `kustomization.yaml` that includes a namespace `myapp` and references a `deployment.yaml`. Apply it with kubectl.
+```bash
+❯ mkdir -p kustomize-demo/base
+❯ cd kustomize-demo/base
+❯ kubectl create deploy web --image=nginx --port=80 --dry-run=client -o yaml > web.yaml
+❯ vim kustomization.yaml
+❯ cat kustomization.yaml
+resources:
+- web.yaml
+❯ cd ../
+❯ kubectl kustomize base
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: web
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: web
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
+❯ kubectl apply -k base
+deployment.apps/web created
+❯ kubectl get deploy web
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE
+web    1/3     3            1           6s
+```
+>[!IMPORTANT]
+>Kubernetes docs have really good examples of kustomize. This exercise can be found in 'Bases and Overlays'
+
+---
+### Create a Kustomize overlay for a `production` environment on top of the base above. The overlay should: change the replica count to 3, change the image tag to `nginx:1.21`, and add a label `env=production` to all resources.
+```bash
+❯ cd overlays/production
+❯ vim kustomization.yaml
+❯ cat kustomization.yaml
+resources:
+- ../../base
+namespace: production
+labels:
+- pairs:
+    env: production
+  includeSelectors: true
+images:
+- name: nginx
+  newTag: "1.21"
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 3
+  target:
+    kind: Deployment
+    name: web
+❯ cd -
+~/CKAD-exercises/kustomize-demo
+❯ kubectl kustomize overlays/production
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: web
+    env: production
+  name: web
+  namespace: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+      env: production
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: web
+        env: production
+    spec:
+      containers:
+      - image: nginx:1.21
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
+❯ kubectl apply -k overlays/production
+deployment.apps/web created
+```
+>[!IMPORTANT]
+>For a patch, always include the base via:
+>```yaml
+>resources:
+>- <path_to_base>
+>```
+>To change labels using kustomize patches, use:
+>```yaml
+>labels:
+>- pairs:
+>	<key>: <value>
+>   includeSelectors: <bool>
+>```
+>To change image, use:
+>```yaml
+>images:
+>- name: nginx
+>   newTag: "1.21"
+>```
+>To change a specific value in a manifest, use:
+>```yaml
+>patches:
+>- patch: |-
+>		op: replace
+>		path: /spec/replicas
+>		value: <value>
+>   target:
+>	kind: Deployment
+>	name: web
+>```
+
+---
+### Use Kustomize to add a `configMapGenerator` that creates a ConfigMap from literals, and a `secretGenerator` that creates a Secret from literals. Reference them in a pod.
+```bash
+❯ vim kustomization.yaml
+❯ cat kustomization.yaml
+resources:
+- web-app.yaml
+configMapGenerator:
+- name: example-configmap
+  literals:
+    - username=slowking
+secretGenerator:
+- name: example-secret
+  literals:
+    - password=thanas24
+❯ kubectl create deploy web-app --image=nginx --port=80 --dry-run=client -o yaml > web-app.yaml
+❯ vim web-app.yaml
+❯ cat web-app.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: web-app
+  name: web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: {}
+        env:
+        - name: USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: example-configmap
+              key: username
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: example-secret
+              key: password
+status: {}
+❯ cd ../
+❯ kubectl kustomize generators
+apiVersion: v1
+data:
+  username: slowking
+kind: ConfigMap
+metadata:
+  name: example-configmap-ft78b6575c
+---
+apiVersion: v1
+data:
+  password: dGhhbmFzMjQ=
+kind: Secret
+metadata:
+  name: example-secret-kkbht4k6d7
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: web-app
+  name: web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - env:
+        - name: USERNAME
+          valueFrom:
+            configMapKeyRef:
+              key: username
+              name: example-configmap-ft78b6575c
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: example-secret-kkbht4k6d7
+        image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
+❯ kubectl apply -k generators
+configmap/example-configmap-ft78b6575c created
+secret/example-secret-kkbht4k6d7 unchanged
+deployment.apps/web-app created
+```
+>[!IMPORTANT]
+>The name of resources must always be all lowercase
+
+>[!IMPORTANT]
+>When generating configMaps or secrets, you can do so either using `literals` with an array of strings like `PASSWORD=1234` or you can use `files` with an array of paths to files
+
+---
