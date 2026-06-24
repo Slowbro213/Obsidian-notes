@@ -1519,3 +1519,160 @@ deployment.apps/web-app created
 >When generating configMaps or secrets, you can do so either using `literals` with an array of strings like `PASSWORD=1234` or you can use `files` with an array of paths to files
 
 ---
+### List all CRDs installed in the cluster. Then describe one to understand its schema.
+```bash
+kubectl get crds
+kubectl describe crd <name>
+```
+>[!NOTE]
+>You can treat `crds` like any other resource
+
+---
+### Create a simple CRD called `Widget` in the group `apps.example.com` with version `v1`. It should have a `spec` with a single field `color` (string). Apply it, then create an instance of it.
+```bash
+❯ vim widgets.yaml
+❯ cat widgets.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: widgets.apps.example.com
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: apps.example.com
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                color:
+                  type: string
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: widgets
+    # singular name to be used as an alias on the CLI and for display
+    singular: widget
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: Widget
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - wt
+❯ kubectl apply -f widgets.yaml
+customresourcedefinition.apiextensions.k8s.io/widgets.apps.example.com created
+```
+>[!IMPORTANT]
+>The Kubernetes docs are a must for this and its easy to find in "# Extend the Kubernetes API with CustomResourceDefinitions"
+
+---
+### Create a Role called `pod-reader` in namespace `dev` that allows `get`, `watch`, and `list` on pods. Then bind it to a ServiceAccount called `viewer` in the same namespace.
+
+```bash
+❯ kubectl create ns dev
+namespace/dev created
+❯ kubectl create serviceaccount viewer
+serviceaccount/viewer created
+❯ kubectl create role pod-reader --verb=get --verb=list --verb=watch --resource=pods -n dev
+role.rbac.authorization.k8s.io/pod-reader created
+❯ kubectl create rolebinding viewer-pod-reader --role=pod-reader --serviceaccount=dev:viewer -n dev
+rolebinding.rbac.authorization.k8s.io/viewer-pod-reader created
+```
+>[!IMPORTANT]
+>To create a role , it must have a list of verbs `--verb=<verb1>,<verb2>,<verb3>` and a resource `--resource` or resource name `--resource-name` or api group `--resource=rs.apps`
+
+>[!IMPORTANT]
+>To create a `RoleBinding` resource, you must specify the role `--role` and serviceaccount `--serviceaccount=<ns>:<svca>`. When specifying the serviceaccount you must specify it like so `<ns>:<svca>`
+
+---
+### Create a ClusterRole called `secret-reader` that allows `get` and `list` on secrets cluster-wide. Bind it to a user called `alice` using a ClusterRoleBinding.
+```bash
+❯ kubectl create clusterrole secret-reader --verb=get,list --resource=secrets
+clusterrole.rbac.authorization.k8s.io/secret-reader created
+❯ kubectl create clusterrolebinding alice-secret-reader --clusterrole=secret-reader --user=alice
+clusterrolebinding.rbac.authorization.k8s.io/alice-secret-reader created
+```
+>[!NOTE]
+>`clusterrole` has two sequential `r`'s
+
+>[!NOTE]
+>When creating a `ClusterRoleBinding` its exactly like a `RoleBinding` but instead of `--role` its `--clusterrole`
+
+---
+### Check what actions the service account `my-user` in namespace `default` can perform. Can it create deployments? Can it list pods in namespace `kube-system`?
+```bash
+❯ kubectl auth can-i create deployments --as=my-user
+no
+❯ kubectl auth can-i get pods -n kube-system --as=my-user
+no
+# or
+❯ kubectl auth can-i list pods -n kube-system --as=my-user
+no
+❯ kubectl auth can-i --list --as=my-user
+Resources                                       Non-Resource URLs   Resource Names   Verbs
+selfsubjectreviews.authentication.k8s.io        []                  []               [create]
+selfsubjectaccessreviews.authorization.k8s.io   []                  []               [create]
+selfsubjectrulesreviews.authorization.k8s.io    []                  []               [create]
+                                                [/api/*]            []               [get]
+                                                [/api]              []               [get]
+                                                [/apis/*]           []               [get]
+                                                [/apis]             []               [get]
+                                                [/healthz]          []               [get]
+                                                [/healthz]          []               [get]
+                                                [/livez]            []               [get]
+                                                [/livez]            []               [get]
+                                                [/openapi/*]        []               [get]
+                                                [/openapi]          []               [get]
+                                                [/readyz]           []               [get]
+                                                [/readyz]           []               [get]
+                                                [/version/]         []               [get]
+                                                [/version/]         []               [get]
+                                                [/version]          []               [get]
+                                                [/version]          []               [get]
+```
+>[!NOTE]
+>The general pattern for permission checking is `kubectl auth can-i <verb> <resource> -n <ns> --as=<user>/<serviceaccount>`
+
+>[!NOTE]
+>In order to check all permissions of a user or service account, use `kubectl auth can-i --list --as=<user>/<serviceaccount>`
+
+---
+### A pod needs to be able to list and get other pods in its own namespace using the Kubernetes API. Set up the necessary ServiceAccount, Role, RoleBinding, and configure the pod to use the ServiceAccount.
+```bash
+❯ kubectl create role pod-pod-reader --verb=list,get --resource=pod
+role.rbac.authorization.k8s.io/pod-pod-reader created
+❯ kubectl create serviceaccount pod-viewer
+serviceaccount/pod-viewer created
+❯ kubectl create rolebinding pod-viewer-pod-pod-reader --role=pod-pod-reader --serviceaccount=default:pod-viewer
+rolebinding.rbac.authorization.k8s.io/pod-viewer-pod-pod-reader created
+❯ kubectl run busybox --image=busybox --restart=Never --dry-run=client -o yaml > pod.yaml
+❯ vim pod.yaml
+❯ cat pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: busybox
+  name: busybox
+spec:
+  serviceAccountName: pod-viewer
+  containers:
+  - image: busybox
+    name: busybox
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+❯ kubectl create -f pod.yaml
+pod/busybox created
+```
