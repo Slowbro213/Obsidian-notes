@@ -62,7 +62,6 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pay-audit-pv
-  namespace: payments
 spec:
   capacity:
     storage: 2Gi
