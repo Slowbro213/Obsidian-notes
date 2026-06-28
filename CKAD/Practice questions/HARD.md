@@ -535,3 +535,183 @@ spec:
 networkpolicy.networking.k8s.io/payments-isolation created
 ```
 
+---
+## Exercise 9 — Finding and Fixing Deprecated API Versions
+
+**Scenario:** A colleague committed manifests for a new `CronJob` and an `Ingress` years ago. The cluster has since been upgraded and those manifests now use removed `apiVersion` values. Your job is to identify the correct current versions, update the manifests, and verify the cluster accepts them. You also need to use `kubectl convert` (via the kubectl-convert plugin) on a third manifest.
+
+---
+
+### Part A — Know your tools
+
+Before touching any manifest, run these commands and understand their output:
+
+```bash
+# List every API group and version the current cluster supports
+kubectl api-versions
+
+# Explain a field to confirm which version it lives in
+kubectl explain cronjob --api-version=batch/v1
+kubectl explain ingress --api-version=networking.k8s.io/v1
+```
+>[!EXPLANATION]
+> kubectl api-versions lists the current api versions of all resources in the cluster
+> `kubectl explain <resource> --api-version=<version>` allows you to understand the resource definition of the resource with the provided api-version
+
+
+### Part B — Broken CronJob manifest (batch/v1beta1 → batch/v1)
+
+`batch/v1beta1` was removed in Kubernetes 1.25. The following manifest will be rejected by any cluster running 1.25+.
+
+**Broken manifest — `broken-cronjob.yaml`:**
+```yaml
+apiVersion: batch/v1beta1      # ← REMOVED in k8s 1.25
+kind: CronJob
+metadata:
+  name: report-generator
+  namespace: default
+spec:
+  schedule: "0 6 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: reporter
+            image: busybox
+            command: ["/bin/sh", "-c", "echo generating report"]
+```
+
+**Task:** Fix the `apiVersion` and apply it.
+```bash
+❯ vim broken-cronjob.yaml
+❯ cat broken-cronjob.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: report-generator
+  namespace: default
+spec:
+  schedule: "0 6 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: reporter
+            image: busybox
+            command: ["/bin/sh", "-c", "echo generating report"]
+❯ kubectl create -f broken-cronjob.yaml
+error: resource mapping not found for name: "report-generator" namespace: "default" from "broken-cronjob.yaml": no matches for kind "CronJob" in version "batch/v1beta1"
+ensure CRDs are installed first
+
+❯ cp broken-cronjob.yaml working-cronjob.yaml
+❯ vim working-cronjob.yaml
+❯ cat working-cronjob.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: report-generator
+  namespace: default
+spec:
+  schedule: "0 6 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: reporter
+            image: busybox
+            command: ["/bin/sh", "-c", "echo generating report"]
+❯ kubectl create -f working-cronjob.yaml
+cronjob.batch/report-generator created
+```
+
+### Part C — Broken Ingress manifest (extensions/v1beta1 → networking.k8s.io/v1)
+
+`extensions/v1beta1` for Ingress was removed in Kubernetes 1.22. Beyond the `apiVersion`, the spec structure itself changed — `backend` syntax is different in `networking.k8s.io/v1`.
+
+**Broken manifest — `broken-ingress.yaml`:**
+```yaml
+apiVersion: extensions/v1beta1 
+kind: Ingress
+metadata:
+  name: old-ingress
+spec:
+  rules:
+  - host: old.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: web-svc
+          servicePort: 80
+```
+
+**Task:** Convert this to the correct `networking.k8s.io/v1` format and apply it.
+```bash
+❯ vim broken-ingress.yaml
+❯ cat broken-ingress.yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: old-ingress
+spec:
+  rules:
+  - host: old.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: web-svc
+          servicePort: 80
+❯ kubectl create -f broken-ingress.yaml
+error: resource mapping not found for name: "old-ingress" namespace: "" from "broken-ingress.yaml": no matches for kind "Ingress" in version "extensions/v1beta1"
+ensure CRDs are installed first
+
+❯ vim working-ingress.yaml
+❯ cat working-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: old-ingress
+spec:
+  rules:
+  - host: old.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-svc
+            port:
+              number: 80
+
+
+❯ kubectl create -f working-ingress.yaml
+ingress.networking.k8s.io/old-ingress created
+```
+
+### Part D — Using kubectl-convert
+
+`kubectl convert` is a standalone plugin (`kubectl-convert`) that rewrites a manifest from one API version to another. On the exam it is usually pre-installed.
+
+```bash
+# Check if it's available
+kubectl convert --help
+
+# Convert the broken CronJob manifest automatically
+kubectl convert -f broken-cronjob.yaml --output-version batch/v1
+
+# Convert and write output to a new file
+kubectl convert -f broken-cronjob.yaml --output-version batch/v1 > converted-cronjob.yaml
+cat converted-cronjob.yaml
+kubectl apply -f converted-cronjob.yaml
+```
+
+---
+
