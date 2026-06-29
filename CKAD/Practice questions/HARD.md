@@ -1,4 +1,4 @@
-### Exercise 1 — Secure Microservice Platform with Canary Release
+## Exercise 1 — Secure Microservice Platform with Canary Release
 
 **Scenario:** Your team is releasing a new version of a payment API (`pay-api`) into the `payments` namespace. The service holds sensitive credentials and needs persistent audit logs. To reduce risk, you are deploying the new version as a canary (25% of traffic) alongside the stable version (75%). A logging sidecar must ship logs off-pod. RBAC must prevent the app from touching anything except its own ConfigMap. A NetworkPolicy must isolate the namespace.
 
