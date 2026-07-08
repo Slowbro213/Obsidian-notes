@@ -20,8 +20,23 @@
               "icon": "lucide-file",
               "title": "HARD"
             }
+          },
+          {
+            "id": "020dae942d055859",
+            "type": "leaf",
+            "state": {
+              "type": "split-diff-view",
+              "state": {
+                "aFile": "CKAD/Practice questions/HARD.md",
+                "bFile": "CKAD/Practice questions/HARD.md",
+                "aRef": ""
+              },
+              "icon": "diff",
+              "title": "Diff: HARD  (Working Tree)"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -207,19 +222,23 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "074ae27ddbedaa5d",
+  "active": "020dae942d055859",
   "lastOpenFiles": [
-    "CKAD/Practice questions/Helm.md",
+    "Excalidraw/Drawing 2026-07-08 19.38.19.excalidraw.md",
     "CKAD/Practice questions/HARD.md",
-    "CKAD/Practice questions/Podman.md",
+    "Excalidraw",
+    "Custom k8s operator",
+    "Untitled.md",
     "CKAD/Practice questions/GAP.md",
+    "CKAD/Practice questions/Services.md",
+    "CKAD/Practice questions/Pod Design.md",
+    "CKAD/Practice questions/Podman.md",
+    "CKAD/Practice questions/Helm.md",
     "CKAD/Practice questions/Configuration.md",
     "CKAD/Practice questions/Core Concepts.md",
     "CKAD/Practice questions/Multi container pods.md",
     "CKAD/Practice questions/Observability.md",
-    "CKAD/Practice questions/Pod Design.md",
     "CKAD/Practice questions/State.md",
-    "CKAD/Practice questions/Services.md",
     "CKA/Courses/Preparation Progress.md",
     "CKA/Courses/freeCodeCamp CKA perparation/workflows/Requests, Limits and Advanced Scheduling.md",
     "CKA/Courses/freeCodeCamp CKA perparation/workflows/Deployments.md",
@@ -233,8 +252,6 @@
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/CoreDNS.md",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/NetworkPolicy.md",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/ClusterIP and NodePort.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/Basics.md",
     "CKAD/Practice questions",
     "CKAD",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
@@ -242,8 +259,6 @@
     "CKA/Courses",
     "Bases/YAML.base",
     "Bases",
-    "CKA/Courses/freeCodeCamp CKA perparation/storage",
-    "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services",
-    "CKA/Courses/freeCodeCamp CKA perparation/services and networking"
+    "CKA/Courses/freeCodeCamp CKA perparation/storage"
   ]
 }
