@@ -8,31 +8,18 @@
         "type": "tabs",
         "children": [
           {
-            "id": "074ae27ddbedaa5d",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "CKAD/Practice questions/HARD.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "HARD"
-            }
-          },
-          {
             "id": "020dae942d055859",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "New tab"
+              "type": "excalidraw",
+              "state": {
+                "file": "Excalidraw/Drawing 2026-08-04 19.04.35.excalidraw.md"
+              },
+              "icon": "excalidraw-icon",
+              "title": "Drawing 2026-08-04 19.04.35.excalidraw"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -52,7 +39,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -218,11 +207,15 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "c172ba13c193321d",
+  "active": "020dae942d055859",
   "lastOpenFiles": [
+    "Excalidraw/Drawing 2026-08-04 19.04.35.excalidraw.md",
+    "Excalidraw",
+    "Projects/homelab",
+    "Untitled",
+    "Projects",
     "Excalidraw/Drawing 2026-07-08 19.38.19.excalidraw.md",
     "CKAD/Practice questions/HARD.md",
-    "Excalidraw",
     "Custom k8s operator",
     "Untitled.md",
     "CKAD/Practice questions/GAP.md",
@@ -247,14 +240,10 @@
     "CKA/Courses/freeCodeCamp CKA perparation/storage/Static Provisioning.md",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/CoreDNS.md",
     "CKA/Courses/freeCodeCamp CKA perparation/services and networking/NetworkPolicy.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/services and networking/Services/LoadBalancer , Ingress and Gateway API.md",
     "CKAD/Practice questions",
     "CKAD",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
     "CKA/Courses/freeCodeCamp CKA perparation",
-    "CKA/Courses",
-    "Bases/YAML.base",
-    "Bases",
-    "CKA/Courses/freeCodeCamp CKA perparation/storage"
+    "CKA/Courses"
   ]
 }
