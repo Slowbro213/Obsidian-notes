@@ -11,12 +11,14 @@
             "id": "020dae942d055859",
             "type": "leaf",
             "state": {
-              "type": "excalidraw",
+              "type": "markdown",
               "state": {
-                "file": "Excalidraw/Drawing 2026-08-04 19.04.35.excalidraw.md"
+                "file": "Projects/homelab/Homelab.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "excalidraw-icon",
-              "title": "Drawing 2026-08-04 19.04.35.excalidraw"
+              "icon": "lucide-file",
+              "title": "Homelab"
             }
           }
         ]
@@ -207,8 +209,10 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "020dae942d055859",
+  "active": "c172ba13c193321d",
   "lastOpenFiles": [
+    "().md",
+    "Projects/homelab/Homelab.md",
     "Excalidraw/Drawing 2026-08-04 19.04.35.excalidraw.md",
     "Excalidraw",
     "Projects/homelab",
@@ -238,8 +242,6 @@
     "CKA/Courses/freeCodeCamp CKA perparation/storage/StorageClasses and Dynamic Provisioning.md",
     "CKA/Courses/freeCodeCamp CKA perparation/storage/Volumes, PVs, and PVCs.md",
     "CKA/Courses/freeCodeCamp CKA perparation/storage/Static Provisioning.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/services and networking/CoreDNS.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/services and networking/NetworkPolicy.md",
     "CKAD/Practice questions",
     "CKAD",
     "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
