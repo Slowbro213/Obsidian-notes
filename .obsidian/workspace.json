@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Projects/homelab/Homelab.md",
+                "file": "Projects/homelab/Project Layout.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Homelab"
+              "title": "Project Layout"
             }
           }
         ]
@@ -192,7 +192,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 214.5
+    "width": 418.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -209,18 +209,28 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "c172ba13c193321d",
+  "active": "020dae942d055859",
   "lastOpenFiles": [
-    "().md",
+    "Pasted image 20260813213743.png",
+    "Pasted image 20260813213630.png",
     "Projects/homelab/Homelab.md",
+    "Projects/homelab/Project Layout.md",
+    "Projects/homelab/Project Layout.md.tmp.14046.a4e56cca1399",
+    "Projects/homelab/Project Layout.md.tmp.14046.be8dd4d1b956",
+    "Projects/homelab/Project Layout.md.tmp.14046.5860f14c99e8",
+    "Projects/homelab/Project Layout.md.tmp.14046.1f2f8e680c9a",
+    "Projects/homelab/Project Layout.md.tmp.14046.c0c57aaece19",
+    "Projects/homelab/Project Layout.md.tmp.14046.4b3cc9bbff38",
+    "Projects/homelab/Project Layout.md.tmp.14046.6ed3f1eb845e",
+    "Projects/homelab/Project Layout.md.tmp.14046.897c5cce85fb",
+    "Projects/homelab/Project Layout.md.tmp.14046.b20124ceaa0d",
+    "Projects/homelab/Project Layout.md.tmp.14046.a3ef6b8d64cb",
+    "Pasted image 20260813205517.png",
+    "Pasted image 20260813205259.png",
+    "().md",
     "Excalidraw/Drawing 2026-08-04 19.04.35.excalidraw.md",
-    "Excalidraw",
-    "Projects/homelab",
-    "Untitled",
-    "Projects",
     "Excalidraw/Drawing 2026-07-08 19.38.19.excalidraw.md",
     "CKAD/Practice questions/HARD.md",
-    "Custom k8s operator",
     "Untitled.md",
     "CKAD/Practice questions/GAP.md",
     "CKAD/Practice questions/Services.md",
@@ -239,13 +249,6 @@
     "CKA/Courses/freeCodeCamp CKA perparation/workflows/Autoscaling workloads.md",
     "CKA/Courses/freeCodeCamp CKA perparation/Useful notes/Config files.md",
     "CKA/Courses/freeCodeCamp CKA perparation/Useful notes/Command patterns.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/storage/StorageClasses and Dynamic Provisioning.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/storage/Volumes, PVs, and PVCs.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/storage/Static Provisioning.md",
-    "CKAD/Practice questions",
-    "CKAD",
-    "CKA/Courses/freeCodeCamp CKA perparation/troubleshooting",
-    "CKA/Courses/freeCodeCamp CKA perparation",
-    "CKA/Courses"
+    "CKA/Courses/freeCodeCamp CKA perparation/storage/StorageClasses and Dynamic Provisioning.md"
   ]
 }

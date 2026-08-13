@@ -1,6 +1,6 @@
-This is my Kubernetes homelab project! I had some old laptops lying around at home, and i decided, why not put them to use? Thus the homelab was born! So far it consists of 2 laptops ( will be expanded in the future ), connected via my home WiFi. The 2 laptops are:
+This is my Kubernetes homelab project! I had some old laptops lying around at home, and I decided: why not put them to use? Thus the homelab was born! So far it consists of 2 laptops (will be expanded in the future), connected via my home WiFi. The 2 laptops are:
 
-Cachyos ( Control Node ):
+CachyOS (Control Node):
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8"/>
@@ -54,7 +54,7 @@ Cachyos ( Control Node ):
 </body>
 </html>
 
-Tux ( Worker Node ):
+Tux (Worker Node):
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8"/>
@@ -108,5 +108,12 @@ Tux ( Worker Node ):
 </body>
 </html>
 
-The reason behind the names of the nodes is due to what they used to be. Before these two laptops used to have the [CachyOS](https://cachyos.org/) and [Gentoo](https://www.gentoo.org/) Linux distros installed, but have since moved to the [NixOS](https://nixos.org/) Linux distro due to the control NixOS provides with its declarative capabilities. The [Tux](https://en.wikipedia.org/wiki/Tux_(mascot)) name though just so happened to appear on its own after i installed NixOS on the ex-Gentoo node.
+The reason behind the names of the nodes is due to what they used to be. These two laptops used to run the [CachyOS](https://cachyos.org/) and [Gentoo](https://www.gentoo.org/) Linux distros, respectively, but have since moved to the [NixOS](https://nixos.org/) Linux distro due to the control NixOS provides with its declarative capabilities. The [Tux](https://en.wikipedia.org/wiki/Tux_(mascot)) name, though, just happened to appear on its own after I installed NixOS on the ex-Gentoo node.
 
+I mainly use this cluster to learn Kubernetes and general DevOps concepts such as Linux administration, CI/CD pipelines, etc., but also to self-host projects of mine. One of these projects, which I'll briefly mention, is a website I made for [Epoka's](https://epoka.edu.al/) programming club. It served as a platform for hosting programming competitions among students, with [LeetCode](https://leetcode.com/)-style exercises. The old, functioning website is no longer online; the website that can be found at https://epokaprogramming.com is a read-only version with a separate database, meant only to show what once was.
+
+Here I'll be documenting everything about my homelab! From physical hardware management to deploying full-fledged applications online!
+
+---
+
+Next: [[Project Layout]] →
