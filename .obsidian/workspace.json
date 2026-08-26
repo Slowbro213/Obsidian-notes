@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Projects/homelab/Project Layout.md",
+                "file": "Projects/homelab/Nixos.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Project Layout"
+              "title": "Nixos"
             }
           }
         ]
@@ -211,10 +211,11 @@
   },
   "active": "020dae942d055859",
   "lastOpenFiles": [
+    "Projects/homelab/Project Layout.md",
+    "Projects/homelab/Nixos.md",
     "Pasted image 20260813213743.png",
     "Pasted image 20260813213630.png",
     "Projects/homelab/Homelab.md",
-    "Projects/homelab/Project Layout.md",
     "Projects/homelab/Project Layout.md.tmp.14046.a4e56cca1399",
     "Projects/homelab/Project Layout.md.tmp.14046.be8dd4d1b956",
     "Projects/homelab/Project Layout.md.tmp.14046.5860f14c99e8",

@@ -1,0 +1,9 @@
+>[ Nix is a tool that takes a unique approach to package management and system configuration. Learn how to make reproducible, declarative and reliable systems.](https://nixos.org/#:~:text=Nix%20is%20a%20tool%20that%20takes%20a%20unique%20approach%20to%20package%20management%20and%20system%20configuration%2E%20Learn%20how%20to%20make%20reproducible%2C%20declarative%20and%20reliable%20systems%2E)
+
+NixOS is an operating system built on top of the nix package manager.  It lets me declare how i want my nodes to be down to the finest details, and then makes that declaration a reality. Many of its features makes it an attractive tool for managing the configuration of your servers, such as: 
+
+- Reliable Upgrades - Nix is a purely functional package manager, meaning that the same parameters will always yield the same result. Its particularly useful for repeatable builds.
+- Atomic Upgrades - NixOS takes a transactional approach to configuration upgrades. If you wanted to change the config of a server of yours, and after applying the changes, for whatever reason the upgrade process fails or is interrupted, the entire upgrade attempt is aborted, and your server is in the exact same state as it was prior to the config upgrade.
+- Rollbacks - Each time a new `sudo nixos-rebuild switch` is used to upgrade your configuration, its old versions are still stored in your machine. You have the ability to switch to any of those old versions. Even if you were to delete those old versions through `nix-collect-garbage -d`, the power of Git in this repository allows me to revert any commit such that my config is back to an older version, which then i can just apply.
+
+The power of NixOS is not limited to everything mentioned here and surpasses my limited understanding, but the above section should provide a clear picture as to why anyone would choose to use this tool.
