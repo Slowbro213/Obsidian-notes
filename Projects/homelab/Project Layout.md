@@ -1,4 +1,4 @@
-In this section I'll be giving a brief overview of the layout of the project, how it's split up, and what each part is responsible for:
+[[]]In this section I'll be giving a brief overview of the layout of the project, how it's split up, and what each part is responsible for:
 
 <div style="display: flex; align-items: center; gap: 1em;">
   <img src="Pasted image 20260813205517.png" style="width: 40%;" />

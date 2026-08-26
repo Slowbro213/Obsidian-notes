@@ -211,6 +211,7 @@
   },
   "active": "020dae942d055859",
   "lastOpenFiles": [
+    "Pasted image 20260826224348.png",
     "Projects/homelab/Project Layout.md",
     "Projects/homelab/Nixos.md",
     "Pasted image 20260813213743.png",
@@ -249,7 +250,6 @@
     "CKA/Courses/freeCodeCamp CKA perparation/workflows/ConfigMaps and Secrets.md",
     "CKA/Courses/freeCodeCamp CKA perparation/workflows/Autoscaling workloads.md",
     "CKA/Courses/freeCodeCamp CKA perparation/Useful notes/Config files.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/Useful notes/Command patterns.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/storage/StorageClasses and Dynamic Provisioning.md"
+    "CKA/Courses/freeCodeCamp CKA perparation/Useful notes/Command patterns.md"
   ]
 }
