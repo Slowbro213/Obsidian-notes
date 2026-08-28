@@ -113,3 +113,5 @@ A linux machine can be tuned for better performance depending on your workflow. 
 
 `modules/performance.nix`
 ![[Pasted image 20260828161107.png]]
+
+For this module
