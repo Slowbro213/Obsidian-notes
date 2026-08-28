@@ -23,16 +23,18 @@ Everything begins with the `flake.nix`. Usual function definitions go something 
 
 A Nix Flake is comprised of `inputs`, `outputs` and a `description`. The description makes no difference in functionality. In `inputs` you declare what your flake needs in order to work, and in `output` you declare what your flake will create based on those inputs.  Within this flake, i have declared that my inputs will be: the nix packages repository , `disko` ( a third party module which allows for declarative disk layouts and partitioning ) and `sops-nix` ( third party module for managing secrets in my repo ). And in my outputs, i have first declared a helper function in nix called `mkNode`, which takes as an argument the `hostname` of a node and returns a `nixosSystem` configuration for that specific `hostname`. Then i have declared that my `nixosConfigurations` will be an attribute set ( think dictionaries in python, just a set of key value pairs ) where the values are nodes created from hostnames. As a result every node is comprised of the same modules, only differing in those modules which are dependent on the hostname itself. This approach provides code reusability and minimizes duplication while keeping shared behavior between nodes consistent. It will be especially useful once i have more nodes, since adding a node is as trivial as adding a couple of files and modifying this attribute set.
 
+// TODO: explain NixOS modules (eg, NixOS comes with variables like environment.systemPackages on its own to define packages in your system)
  
 # Shared modules
 
 The entry point creates `nixosSystems` from shared modules as well as node specific modules. Since shared modules are present on all nodes, i'll be covering them first.
 
+## Commons
 
 `modules/common.nix`
 ![[Pasted image 20260827223508.png]]
 
-Every module gets a list of arguments available to them from the flake. The list at the top is not exhaustive, meaning any given module may have access to more arguments than declared, its just that the only declared arguments are the relevant ones for this module. `config` is an argument that contains contributions from every module and makes those contributions available to all modules that use it. Nix doesnt evaluate modules in file order, it instead first combines every contribution to the `config` object from every module and then starts evaluation. `common.nix` in our case is using a value from config.sops.secrets, which contains the path to the hashed password of the `slowking` (me!) user. Secrets management for the NixOS part of the project will be explained in detail later on, for now just keep in mind that `config.sops.secrets.* `provides us with different values which are safely encrypted and stored in this repository.
+Every module gets a list of arguments available to them from the flake. The list at the top is not exhaustive, meaning any given module may have access to more arguments than declared, its just that the only declared arguments are the relevant ones for this module. `config` is an argument that contains contributions from every module and makes those contributions available to all modules that use it. Nix doesnt evaluate modules in file order, it instead first combines every contribution to the `config` object from every module and then starts evaluation. `common.nix` in our case is using a value from config.sops.secrets, which contains the path to the hashed password of the `slowking` (me!) user. Secrets management for the NixOS part of the project will be explained in detail later on, for now just keep in mind that `config.sops.secrets.* `provides us with different values which are safely encrypted and stored in this repository. `pkgs` contains the packages repository provided by the nix package manager, and `lib` provides utility functions for manipluation of objects in nix.
 
 After the list of arguments, you'll find i have declared a helper list, which contains the ssh public keys of different machines i use to ssh into my nodes. I later reference this list in other configurations below. Since they are public keys, its completely safe to have them out in the wild like this!
 
@@ -81,3 +83,33 @@ This line forbids the editing by hand of users and groups.  The one and only way
     openssh.authorizedKeys.keys = [ (lib.strings.trim (builtins.readFile ../keys/deploy.pub)) ];
   };
 ```
+
+Here I have configured two users who are present in all nodes. The first user is `slowking` (me!), and the second is the `deploy` user. For the `slowking` user i have specified that they are a normal user which just means that logging in and having a shell is possible for this user. They have uid 1000 which can stay unspecified, however if it does stay unspecified, then NixOS will auto assign a uid to that user, and if i were to add users in the future, then my slowking user might get a new random auto assigned uid while there are still files in the system created by slowking using the old uid. pinning it manually resolves this issue. They are part of the `wheel` group which is a neccecity for using the `sudo` command. You can log into the slowking user via ssh with any of the admin keys listed by the `adminKeys` list, and finally their password hash exists in a file the path of which is specified in sops secrets. 
+
+The `deploy` user has much of the same characteristics, except that only one public ssh key is allowed to login as this user and they dont have a password (meaning that the only way to log in as this user is via ssh).
+
+```nix
+  # deploy may run nixos-rebuild's activation non-interactively.
+  security.sudo.extraRules = [{
+    users = [ "deploy" ];
+    commands = [{ command = "ALL"; options = [ "NOPASSWD" ]; }];
+  }];
+```
+
+Above i have defined some extra security rules. Specifically i have declared that the `deploy` user may use all commands and may use sudo without a password. This isnt true for the `slowking` user who still needs a password to use sudo.
+
+```nix
+  environment.systemPackages = with pkgs; [
+    git vim htop btop tmux iproute2 iptables ethtool pciutils usbutils
+    dnsutils curl jq fastfetch aha
+  ];
+```
+
+And lastly for the `common.nix` file, i have specified what system packages are avialable on my nodes. NixOS looks at the list of specified packages within `environment.systemPackages` and ensures your system will have themdownloaded and ready to be used after applying the changes. The `with pkgs;` bit lets us omit the `pkgs.*` part before each entry in the list and makes for a cleaner looking list. Names of each entry coorelate to a the name of a package within the nix package manager.
+
+## Performance
+
+A linux machine can be tuned for better performance depending on your workflow. Kubernetes clusters with lots of components running tend to be quite RAM hungry, and tuning your machine such that `zramSwap` is enabled for example can help at dealing with RAM heavy moments or workloads. Lets have a look at `performance.nix` to see what was done for this workflow:
+
+`modules/performance.nix`
+![[Pasted image 20260828150207.png]]
