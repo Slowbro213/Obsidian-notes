@@ -112,4 +112,4 @@ And lastly for the `common.nix` file, i have specified what system packages are 
 A linux machine can be tuned for better performance depending on your workflow. Kubernetes clusters with lots of components running tend to be quite RAM hungry, and tuning your machine such that `zramSwap` is enabled for example can help at dealing with RAM heavy moments or workloads. Lets have a look at `performance.nix` to see what was done for this workflow:
 
 `modules/performance.nix`
-![[Pasted image 20260828150207.png]]
+![[Pasted image 20260828161107.png]]
