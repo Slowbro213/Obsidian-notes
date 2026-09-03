@@ -151,3 +151,29 @@ Next we have some kernel parameters:
 
 Transparent huge pages can cause a lot of issues if misused. Whenever a process demands a page of memory, the OS has to allocate one from RAM. Allocating a 4kb memory page is significantly easier than allocating a 2mb one. As a matter of fact, allocating 512 4kb pages is easier than allocating a single 2mb page due to [memory fragmentation](https://en.wikipedia.org/wiki/Fragmentation_(computing)). Continuous use and misuse of huge pages can lead to periods of massive stalls where the OS is struggling to find a contiguous 2mb slab of memory, significantly slowing down your processes rather than speeding them up. Other issues occur on processes that use `fork()` and write to memory originally allocated in the parent process. Whenever a `fork()` is used, memory pages from the parent are kept as read-only for both processes. `fork()` itself doesn't do any copying. The moment a child or parent process writes to any of those pages, no matter how small the write is, and more than one process still has access to that page, the page is fully copied and handed to the process to do as it pleases. For 4kb that copy is not a huge deal, whereas a 2mb huge page is a huge deal and may slow down or overconsume RAM quite dramatically.
 
+`psi=1` enables "Pressure Stall Information", which lets tools like the node-exporter scrape infromation about which processes are stalled waiting for resources and by how much. Useful when debugging why a service might be slow on the lower-level side of things.
+
+`mitigations=off` disables a security feature of CPUs meant to protect them from speculative execution attacks. CPU performance can be a real bottleneck in my `tux` node. Slightly less of a bottleneck in my `cachyos` node but ive found it helpful nonetheless. The security impact of this is minimal in my case since the only workloads im running are the ones i create.
+
+Next we have some power and performance settings:
+```nix
+  powerManagement.enable = true;
+  powerManagement.cpuFreqGovernor = "performance";
+  services.power-profiles-daemon.enable = lib.mkForce false;
+  services.tlp.enable = lib.mkForce false;
+```
+
+All of these features do more or less the same. My nodes are laptops and as such they dont require max throughput and power all day every day. Most OSs running on laptops tend to have settings enabled which limit the pefromance of the laptop in order to save some battery life. My nodes have been repourposed to servers and are plugged in at all times, therefore these settings are only a hinderence for my use case.
+
+Now for some RAM and swap tuning:
+```nix
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+  };
+```
+
+Swap memory is what Operating Systems tend to do when they run out of RAM. If the demand for RAM doesnt meet supply, your OS offloads some of the RAM that isnt being actively used to a disk parition specifically for swap. The moment that data is needed again the OS loads it back into RAM, offloading some other part to swap in the case that there still isnt enough space. `zramSwap` is similar, but instead of offloading to disk, your OS compresses some memory pages and holds that compressed data in RAM, decompressing it when that data is demanded again. These methods of swap arent mutually exclusive and in fact, Windows 11 uses both by default. In my case i have opted in to using just `zramSwap` instead of utilizing the disk for it. Both methods have their pros and cons. Traditional swap memory can hold a lot of data. Disk memory is less expensive and bigger than voletile memory, but its speed is limited by your hardisk. Even SSDs can be slow when theres lots of I/O demand from other processes. `zramSwap` on the other hand trades some capacity for speed. The CPU is quite fast at compression and decompression, significantly faster than your disk is at reading and writing, but compression can only save so much space. It can be especially ineffective at compressing seemingly random data such as in the case of encrypted data. Nonetheless the swap mechanism is a necessity in any workload where sudden short-lived spikes in RAM demand which supersede your supply tend to occur.
+
+The `zstd` algorithm tends to be the slower option, but it saves the most data. Other algorithms like `lz4` and `lzo` are faster but compress worse. `memoryPercent` defines the maximum amount of RAM `zramSwap` is allowed to use for holding compressed data within RAM itself. As ive come to find out, most people recommend 50% as a good default value.
