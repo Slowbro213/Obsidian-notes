@@ -225,3 +225,45 @@ Now for some kernel runtime parameters tuning:
 `net.netfilter.nf_conntrack_max` sets the maximum number of network connections the kernel can keep track of. [Netfilter](https://www.netfilter.org/) is what the kernel uses to filter packets as well as hold information about network connections. Data about the connections includes source/destination ip/port of packets, and also NAT-related data such as what the packet's source/destination was rewritten to or from. Kubernetes specifically puts this connection tracking under a lot of load due to how `kube-proxy` manages the `Service` resource. The value that was set for this configuration allows for a lot of headroom. Errors from a misconfigured number can be a pain to debug.
 
 `net.ipv4.tcp_congestion_control`, `net.core.default_qdisc`, `boot.kernelModules = [ "tcp_bbr" ]` are configs that work together. `boot.kernelModules = [ "tcp_bbr" ]` lets the Linux kernel see a certain congestion control algorithm, the algorithm for deciding how to send packets as fast as possible without having them be dropped by your router, called BBR as a usable option in other configs.  `net.ipv4.tcp_congestion_control = "bbr"` uses the algorithm that was loaded by the previous setting. `net.core.default_qdisc` is a configuration for the layer sitting between the kernel's TCP/IP stack and the network interface driver. It's usually the case that more than one socket is ready to transmit packets into the wire, but only some do at a time. `qdisc` decides which one, and in my case the algorithm behind it is `fq` (fair queue).  The default congestion control algorithm for Linux is `cubic`, which works by continuously sending packets faster and faster until your packets start to get dropped. Once the drops happen, it sees that as the signal to cap its rate. This algorithm rests on the assumption that packets you send are only ever dropped due to congestion, which in cases like nodes being connected over Wi-Fi, it's not always the case whatsoever, and may cap your speeds for no reason other than something unexpected happened which dropped packets. `bbr`, on the other hand, doesn't measure through loss, instead it relies on the bandwidth and RTT of the network, and uses those factors to do congestion control. As for `qdisc`, the default algorithm for Linux is just FIFO: the first packets to be queued are the first to be sent. `fq`, on the other hand, has a separate queue per network flow and has the ability to send packets at a specific time. `bbr` needs these capabilities in order to properly space out packets according to its calculations.
+
+
+Next, we have:
+```nix
+services.fstrim.enable = true;
+```
+
+SSDs can only write to blocks of their memory that are marked as free. Whenever you delete a file in Linux, the only guarantee present is that Linux will mark that file as deleted. Your SSD doesn't know if the block corresponding to that file is free yet. The OS has to tell it that. Telling your SSD that a block is free is an operation that takes some non-zero amount of time, as such, doing it the moment you delete a file might slow your processes down (the call to do it is synchronous). The next best option is to periodically inform the SSD that a group of blocks are free all at once in batches, run in periods when the SSD is already idle and not by processes waiting to confirm that a file is really deleted.
+
+Disk scheduling:
+```nix
+  services.udev.extraRules = ''
+    ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/scheduler}="none"
+    ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"
+  '';
+```
+
+`udev` lets you add extra rules for custom handling of device-related events. In this case two extra rules were added:
+
+1. Whenever a device whose name matches the `nvme[0-9]n[0-9]` regex is added or changes, set its `queue/scheduler` attribute to `none`.
+2. Whenever a device whose name matches the `sd[a-z]` regex is added or changes, and its `queue/rotational` attribute is `0` (meaning it's not a spinning disk), set its `queue/scheduler` attribute to `mq-deadline`.
+
+The OS has I/O scheduling abilities: whenever some writes are queued, it can decide the order in which those writes are carried out. In the case of spinning disks this was highly beneficial, as reducing the seek time between each write meant saving a considerable amount of time. NVMes, on the other hand (which is what the `cachyos` has), don't really have seek times, and perform scheduling all on their own. Having the OS do scheduling on top of what the NVMe does just wastes CPU for no added gain. Therefore, scheduling is turned off (setting the attribute to `none`). SATA SSDs, on the other hand, have very basic scheduling on their own. Letting the OS do the I/O scheduling for a SATA SSD can be beneficial.
+
+
+`journald` configuring:
+```nix
+  services.journald.extraConfig = ''
+    SystemMaxUse=500M
+    RateLimitIntervalSec=30s
+    RateLimitBurst=10000
+  '';
+```
+
+I'm not a big fan of `journald`. `journald` is what `systemd` uses for storing and retrieving logs it got from its units. `journald` stores those logs in a binary format, which is efficient for storage but not human readable. If your `journald` crashes or gets corrupted for whatever reason, retrieving those logs can become a real hassle. Nonetheless, NixOS and `systemd` (therefore `journald` as well) are very tightly coupled with each other, so I have no choice in this area. `SystemMaxUse=500M` puts a limit to how large the journal can grow from storing logs. `journald` computes its own limit by default, but it may be larger than you want. `RateLimitIntervalSec=30s`, `RateLimitBurst=10000` cap how fast a unit is allowed to print out logs. If a process prints more than `10000` logs in `30s`, `journald` starts dropping future logs and keeping count of those dropped logs. Any process continuously crashing and restarting will therefore not consume all of your log space. 
+
+And finally:
+```nix
+  systemd.oomd.enable = false;
+```
+
+`systemd.oomd` is very useful. It uses PSI stats to determine when to OOM-kill (out of memory) processes, as opposed to waiting until the kernel is *completely out of memory* before acting. However, Kubernetes already does this on its own using `kubelet`. `kubelet` and `systemd.oomd` can't communicate and cooperate with each other, which can lead to more processes being OOM-killed than necessary. Since turning off `kubelet` would lead to this not being a Kubernetes cluster in the first place, I just disabled `systemd.oomd`.
