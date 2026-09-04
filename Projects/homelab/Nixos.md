@@ -177,3 +177,51 @@ Now for some RAM and swap tuning:
 Swap memory is what Operating Systems tend to do when they run out of RAM. If the demand for RAM doesnt meet supply, your OS offloads some of the RAM that isnt being actively used to a disk parition specifically for swap. The moment that data is needed again the OS loads it back into RAM, offloading some other part to swap in the case that there still isnt enough space. `zramSwap` is similar, but instead of offloading to disk, your OS compresses some memory pages and holds that compressed data in RAM, decompressing it when that data is demanded again. These methods of swap arent mutually exclusive and in fact, Windows 11 uses both by default. In my case i have opted in to using just `zramSwap` instead of utilizing the disk for it. Both methods have their pros and cons. Traditional swap memory can hold a lot of data. Disk memory is less expensive and bigger than voletile memory, but its speed is limited by your hardisk. Even SSDs can be slow when theres lots of I/O demand from other processes. `zramSwap` on the other hand trades some capacity for speed. The CPU is quite fast at compression and decompression, significantly faster than your disk is at reading and writing, but compression can only save so much space. It can be especially ineffective at compressing seemingly random data such as in the case of encrypted data. Nonetheless the swap mechanism is a necessity in any workload where sudden short-lived spikes in RAM demand which supersede your supply tend to occur.
 
 The `zstd` algorithm tends to be the slower option, but it saves the most data. Other algorithms like `lz4` and `lzo` are faster but compress worse. `memoryPercent` defines the maximum amount of RAM `zramSwap` is allowed to use for holding compressed data within RAM itself. As ive come to find out, most people recommend 50% as a good default value.
+
+Now for some kernel runtime parameters tuning:
+```nix
+  boot.kernel.sysctl = {
+    "vm.swappiness" = 100; # zram-appropriate
+    "vm.overcommit_memory" = 1;
+    "vm.max_map_count" = 1048576;
+    "fs.inotify.max_user_instances" = 8192;
+    "fs.inotify.max_user_watches" = 524288;
+    "fs.file-max" = 2097152;
+    "net.ipv4.ip_forward" = 1;
+    "net.bridge.bridge-nf-call-iptables" = 1;
+    "net.core.somaxconn" = 4096;
+    "net.netfilter.nf_conntrack_max" = 262144;
+    "vm.dirty_background_ratio" = 5;
+    "vm.dirty_ratio" = 10;
+    "fs.aio-max-nr" = 1048576;
+    "net.ipv4.tcp_congestion_control" = "bbr";
+    "net.core.default_qdisc" = "fq";
+  };
+  
+  boot.kernelModules = [ "tcp_bbr" ];
+
+```
+
+`vm.swappiness` is well above the default value of `60`. This number refers to how likely the kernel is to use swap memory as opposed to loading a page back to RAM from swap. In most cases where swap uses the disk, you want this vlaue to be at default or lower, since offloading RAM often can be slow. But here we are using `zramSwap` , which can load and offload memory at significantly higher speeds than the disk can, making swap memory usage something we want to actively encourge for better memory management.
+
+`vm.overcommit_memory` lets processes allocate more memory than is available on the machine. Most arena allocators tend to double their capacites over time, which can result in some huge memory demands that can be very hard to meet while barely utilizing all of the demanded memory anyway. Arena memroy allocators are common in high performance applications such as databases or something like the JVM. Overcommiting memory is possible due to virtual memory. Whenever a process initially asks for memory, the OS just marks that memory as allocated virtually. Actual RAM is only ever allocated when demand is present. The OS lazily maps virtual pages to physical ones during a processes lifetime. So if your machine has 8GB of RAM, and a process asks for a 10GB slab of memory, the OS only allocates RAM for the parts of that 10GB virtual memory the process actually uses.
+
+`vm.max_map_count` controls how many `mmap()` regions are allowed for a single process. Current demand does not justify an increase from the default level, but my future plans will probably match this.
+
+`vm.dirty_background_ratio, vm.dirty_ratio` these two configs are similar and work together. Whenever something is written to a file, the OS doesnt outright flush that write to disk. Instead it keeps that write in memory pages and flushes them when appropriate. `vm.dirty_background_ratio` sets the percentage of RAM the OS can use before flushing pages to disk gradually and asynchronously. `vm.dirty_ratio` is similar but instead of writes having to be async, they become blocking. No more RAM is allowed to be used for file writes than what this config is set to, and it will block future file writes until the existing pages are flushed out. For cirtical workloads where data loss cannot be tolerated, keeping this number low can be beneficial (for example, WALs which dont fsync right away may lose data). 
+
+`fs.inotify.max_user_instances` inotify is used by processes that watch files for changes. Kubernetes uses this a lot, and the default value for this parameter tends to be too low.
+
+`fs.file-max` controls how many file descriptors are allowed to exist at once. My nodes currently run lots of pods and will only run more pods in the future, causing an increase in file descriptors. Better to make some headroom now than having to debug pods crashing from something id never think to check.
+
+` fs.aio-max-nr` refers to the total maximum number of async I/O requests processes allowed to exist in this machine. There really is no limit  to how high the number can be, and setting the limit to a high number can help processes which make a lot of async I/O requests such as databases. The only reason to set a non massive number is to prevent misbehaving processes from exhausting all kernel memory by making unlimited I/O requests.
+
+`net.ipv4.ip_forward` when enabled allows machines to route packets between interfaces.A requirement for pod-to-pod communication in Kubernetes.
+
+`net.bridge.bridge-nf-call-iptables` is also required to be enabled for Kubernetes. `NetworkPolicies` specifically. Pod network is bridged traffic, and this setting lets `iptables` control bridged traffic, which `NetworkPolicies` can control. 
+
+`net.core.somaxconn` impacts how TCP sockets behave. Whenever an incoming tcp connection arrives in a tcp socket, it sits in a queue until that connection is `accept()`-ed. This configu controls how big that queue can be per TCP socket. Setting it to a high number can help with not dropping connections under load.
+
+`net.netfilter.nf_conntrack_max` sets the maximmum amount of network connections the kernel can keep track of. [Netfilter](https://www.netfilter.org/) is what the kernel uses to filter packets as well as hold information about network connections. Data about the connections includes source and destination ip and port of packets, and also NAT related data such as what the packets source and desitnation was rewritten to or from. Kubernetes specifically put this connection tracking under a lot of load due to how `kube-proxy` manages the `Service` resource. The value that was set for this configuration allows for a lot of headroom , errors from too low of a number can be a pain to debug.
+
+`net.ipv4.tcp_congestion_control`, `net.core.default_qdisc`, `boot.kernelModules = [ "tcp_bbr" ]` 
