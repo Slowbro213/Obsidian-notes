@@ -267,3 +267,13 @@ And finally:
 ```
 
 `systemd.oomd` is very useful. It uses PSI stats to determine when to OOM-kill (out of memory) processes, as opposed to waiting until the kernel is *completely out of memory* before acting. However, Kubernetes already does this on its own using `kubelet`. `kubelet` and `systemd.oomd` can't communicate and cooperate with each other, which can lead to more processes being OOM-killed than necessary. Since turning off `kubelet` would lead to this not being a Kubernetes cluster in the first place, I just disabled `systemd.oomd`.
+
+## Networking
+
+The networking section for NixOS primarily deals with the `networking.nix` file. There youll find configurations regarding network setup of nodes to ensure stable communication with each other and the internet.
+
+`modules/networking.nix`
+![[Pasted image 20260907182031.png]]
+
+At the top of the file ive defined a helper variable to be reused below and carries the value of `config.homelab.node`. Instead of pasting `config.homelab.node` every time i need a value from i can just say `cfg`.
+
