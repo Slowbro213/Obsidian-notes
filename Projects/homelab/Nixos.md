@@ -334,3 +334,4 @@ But i think we can agree one is nicer to look at.
         "ext:WIFI_PSK";
     };
 ```
+This block enables wireless connectivity and sets the network interface for wireless to be the value we set at `cfg.wifiInterface`. The `secretsFile` attribute wants the path to the password-key for the wifi we are connecting to, a value which is provided from a secret we manage via `sops`.
