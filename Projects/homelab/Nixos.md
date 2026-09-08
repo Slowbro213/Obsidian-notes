@@ -361,3 +361,6 @@ Simple enough, the machine will use the address `"192.168.1.1"` as its default g
     '';
 ```
 If you've ever edited the `/etc/hosts` file on an Ubuntu machine, this is essentially the same thing — we are adding some custom-defined hostnames that will resolve to our custom-defined IP addresses. Kubernetes needs a CRI (Container Runtime Interface) so it can run pods. CRIs are what's responsible for pulling images, which are then used to run containers. The CRI of my choice is called `containerd`, and that CRI doesn't read from CoreDNS like pods running in Kubernetes do — it reads `/etc/rancher/k3s/registries.yaml`. Within my cluster I use `zot`, a self-hosted image repository where I store the images I have built of my running apps, such as the Epoka Programming Club web app. `containerd` needs to pull from `zot` in order to run apps whose images are stored in `zot`, and for that it needs to know where to find it and what its credentials are. This information is stored in `/etc/rancher/k3s/registries.yaml`, but the address used to find `zot` doesn't use the IP address of the node it's running on — it instead uses the custom hostname `registry.gentoo.lan`, and that hostname still needs to resolve to something in the end. `networking.extraHosts` is therefore used so that `registry.gentoo.lan` can resolve to the node holding `zot`.
+
+## Security
+
