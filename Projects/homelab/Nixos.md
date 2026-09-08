@@ -270,10 +270,67 @@ And finally:
 
 ## Networking
 
-The networking section for NixOS primarily deals with the `networking.nix` file. There youll find configurations regarding network setup of nodes to ensure stable communication with each other and the internet.
+The networking section for NixOS primarily deals with the `networking.nix` file. There you'll find configurations regarding network setup of nodes to ensure stable communication with each other and the internet.The primary use of this module is for reusability across nodes and it is to be imported into the custom definitions of a node.
 
-`modules/networking.nix`
+`modules/networking.nix` // TODO: replace this image
 ![[Pasted image 20260907182031.png]]
 
 At the top of the file ive defined a helper variable to be reused below and carries the value of `config.homelab.node`. Instead of pasting `config.homelab.node` every time i need a value from i can just say `cfg`.
 
+```nix
+  options.homelab.node = {
+    wifiInterface = lib.mkOption { type = lib.types.str; description = "WiFi interface name"; };
+    ipv4 = lib.mkOption { type = lib.types.str; description = "Static IPv4 address (no prefix)"; };
+  };
+```
+The above snippet creates an attribute that can later be referenced in other modules. Here i have simply declared that its exists, what its type will be and a description of what it holds for clarity.
+
+`homelab.node` now holds a `wifiInterface` option, which is then set by other modules and can be node specific if needed. It also holds `ipv4`, which similarly to the previous one can be referenced by other modules for their uses.
+
+```nix
+config.networking = {
+  useDHCP = false;
+  enableIPv6 = false;
+  wireless = {
+    enable = true;
+    interfaces = [ cfg.wifiInterface ];
+    secretsFile = config.sops.secrets."wifi/env".path;
+    networks.${lib.strings.trim (builtins.readFile ../assets/wifi-ssid.txt)}.pskRaw =
+      "ext:WIFI_PSK";
+  };
+  interfaces.${cfg.wifiInterface}.ipv4.addresses = [
+    { address = cfg.ipv4; prefixLength = 24; }
+  ];
+  defaultGateway = "192.168.1.1";
+  nameservers = [ "192.168.1.1" ];
+  extraHosts = ''
+    192.168.1.25 registry.gentoo.lan
+  '';
+};
+```
+
+This snippet sets some of the values within the `config` attribute set thats present in every module. There is no difference in saying
+```nix
+config.networking.useDHCP = false;
+config.networking.enableIPv6 = false;
+```
+and
+```nix
+config.networking = {
+  useDHCP = false;
+  enableIPv6 = false;
+};
+```
+
+But i think we can agree one is nicer to look at. 
+`useDHCP = false` disables the use of DHCP. These nodes need stable IPs in order of the Kubernetes Control Plane to know how to find its workers, and for the workers to know how to find the API Server.
+`enableIPv6 = false` disables the use of IPv6. My current WI-FI network has no IPv6 capabilites, which would cause connections via IPv6 addresses from my pods to hang indefinetly. I ran into this issue when my pods were failing to pull some images from [docker.io](https://www.docker.com/). Current networking library implemetations (glibc) prefers the use of IPv6 addresses over IPv4, and when a DNS query returned an IPv6 address thats what caused my pod to hang.
+```nix
+    wireless = {
+      enable = true;
+      interfaces = [ cfg.wifiInterface ];
+      secretsFile = config.sops.secrets."wifi/env".path;
+      networks.${lib.strings.trim (builtins.readFile ../assets/wifi-ssid.txt)}.pskRaw =
+        "ext:WIFI_PSK";
+    };
+```
