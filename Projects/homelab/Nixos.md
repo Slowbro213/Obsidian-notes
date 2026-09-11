@@ -364,3 +364,24 @@ If you've ever edited the `/etc/hosts` file on an Ubuntu machine, this is essent
 
 ## Security
 
+Security is handeled using a combination of configurations and processes within my homelab setup. On the NixOS side of things my primary concerns are that no outsider can access my nodes without my permission, my processes cant be compromised, my secrets stay secret, and that if any layer fails there is another layer to support it. As such this section will be split into two parts, configurations and secrets management. 
+
+### Configurations
+
+Configs regarding security are mainly found in `modules/security.nix`. Lets have a look:
+
+![[Pasted image 20260909115536.png]]
+
+Its fairly small compared to my other files so far, but each section is important.
+
+```nix
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+    };
+  };
+```
+Enables OpenSSH on my machines, which lets me access a remote shell for any maintanace work i might want to perform on my nodes. Using `nixos-rebuild-switch` remotely also requires a secure shell
