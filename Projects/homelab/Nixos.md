@@ -384,4 +384,55 @@ Its fairly small compared to my other files so far, but each section is importan
     };
   };
 ```
-Enables OpenSSH on my machines, which lets me access a remote shell for any maintanace work i might want to perform on my nodes. Using `nixos-rebuild-switch` remotely also requires a secure shell
+Enables OpenSSH on my machines, which lets me access a remote shell for any maintenance work i might want to perform on my nodes or for using `nixos-rebuild-switch`. The settings defined there make it so logging in with SSH and using a password to authenticate is impossible. The only way to login is if your machine has the correct SSH key, and stealing SSH keys is a whole lot harder than stealing some password short enough for me to remember. Root login is also not permitted, so that if anyone does manage to login it would have to be the `slowking` user which needs a password to use sudo, introducing multiple layers of defense into this setup. There is one user which doesn't need a password for sudo, and that's the `deploy` user, but since only one machine has the SSH keys for that user , that makes logging in as that user a lot harder for an attacker.
+
+```nix
+  services.fail2ban = {
+    enable = true;
+    maxretry = 5;
+  };
+```
+
+Fail2Ban sets limits on how many times a password can be used to try and log in. Since password authentication for SSH is not allowed here this is less about guessing passwords and more about not letting attackers try different keys in a sequence. Once 5 failed attempts have been made the address that's trying to login gets firewall-ed.
+
+```nix
+  security.apparmor.enable = true;
+```
+
+This line enables [AppArmor](https://www.apparmor.net/) which extends the traditional capabilities of Linux permissions. Even if a process is compromised, an additional profile based rule enforcement can prevent that process from doing damage.
+
+```nix
+  systemd.coredump.enable = false;
+```
+
+Disabling systemd coredump prevents secrets present within the memory of processes from being leaked in log files after a process crash. Coredumps are useful for figuring out why a process crashed, but this is a trade off worth making.
+
+```nix
+  security.pam.loginLimits = [
+    { domain = "*"; type = "hard"; item = "core"; value = "0"; }
+  ];
+```
+
+PAM stands for "Pluggable Authentication Modules". Linux handles session authentication through PAM. Instead of different services implementing their on logins ( SSH, sudo, etc) they can just use PAM. Systemd isn't the only part of NixOS that can produce coredumps,  user sessions can as well. This line disables coredumps at the user session level, whereby:
+
+All users - `domain = "*"` will have a core file of size 0 `item = "core"; value = "0"` and this cannot be changed `type = "hard"`. 
+
+```nix
+  services.tailscale.enable = true;
+```
+
+This enables the beloved [Tailscale](https://tailscale.com/) service. Tailscale is what i use to create a VPN so that i can expose services from my machine that i want to be accessible only from my other machines. I mainly use this to SSH to my nodes from machines outside of my home network, or to view admin dashboards of my cluster accessible only by me. There will be more on Tailscale on the cluster management part.
+
+```nix
+  networking.firewall = {
+    enable = true;
+    checkReversePath = "loose";
+    trustedInterfaces = [ "cni0" "tailscale0" ];
+  };
+```
+
+Its best if i explain this configuration line by line:
+
+- `enable = true;` - Simple enough, just enables the firewall
+- `checkReversePath = "loose"` Is a way to protect from packets whose address has been spoofed. Attackers may send packets whose source addresses do not route to anything, which might be used to consume resources. `checkReversePath` first checks if we can route to the source IP address of the packet, dropping all packets whose source is unreachable. `loose` means that, if a packet comes, then we will use all network interfaces available to determine if the source is reachable. There is another option `strict` which only uses the network interface the packet came from to determine if the source is reachable. So why `loose`? This setup has a lot of network interfaces (Wi-Fi, Tailscale, Kubernetes etc), with a lot of packets coming through between them. Setting it to `strict`might drop otherwise valid packets, and i don't want to be the one to debug that issue.
+- `trustedInterfaces = [ "cni0" "tailscale0" ];` `cni0` is the Kubernetes network interface and `tailscale0` is the Tailscale network interface. This line trusts all traffic coming from those interfaces and lets them bypass normal network restrictions.
