@@ -393,7 +393,7 @@ Enables OpenSSH on my machines, which lets me access a remote shell for any main
   };
 ```
 
-Fail2Ban sets limits on how many times a password can be used to try and log in. Since password authentication for SSH is not allowed here this is less about guessing passwords and more about not letting attackers try different keys in a sequence. Once 5 failed attempts have been made the address that's trying to login gets firewall-ed.
+Fail2Ban sets limits on how many times a password auth attempt can be failed when trying to log in. Since password authentication for SSH is not allowed here this is less about guessing passwords and more about not letting attackers try different keys in a sequence. Once 5 failed attempts have been made the address that's trying to login gets firewall-ed.
 
 ```nix
   security.apparmor.enable = true;
