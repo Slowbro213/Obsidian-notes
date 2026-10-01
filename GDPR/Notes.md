@@ -225,3 +225,33 @@ The controller and the processor and, where applicable, their representatives, s
 3.   Adherence to an approved code of conduct as referred to in Article 40 or an approved certification mechanism as referred to in Article 42 may be used as an element by which to demonstrate compliance with the requirements set out in paragraph 1 of this Article.
 
 4.   The controller and processor shall take steps to ensure that any natural person acting under the authority of the controller or the processor who has access to personal data does not process them except on instructions from the controller, unless he or she is required to do so by Union or Member State law.
+
+---
+
+## Article 33: Notification of a personal data breach to the supervisory authority
+
+1. In the case of a personal data breach, the controller shall without undue delay and, where feasible, not later than 72 hours after having become aware of it, notify the personal data breach to the supervisory authority competent in accordance with Article 55, unless the personal data breach is unlikely to result in a risk to the rights and freedoms of natural persons. Where the notification to the supervisory authority is not made within 72 hours, it shall be accompanied by reasons for the delay.
+2. The processor shall notify the controller without undue delay after becoming aware of a personal data breach.
+3. The notification referred to in paragraph 1 shall at least:
+	- (a) describe the nature of the personal data breach including where possible, the categories and approximate number of data subjects concerned and the categories and approximate number of personal data records concerned;
+	- (b) communicate the name and contact details of the data protection officer or other contact point where more information can be obtained;
+	- (c) describe the likely consequences of the personal data breach;
+	- (d) describe the measures taken or proposed to be taken by the controller to address the personal data breach, including, where appropriate, measures to mitigate its possible adverse effects.
+4.   Where, and in so far as, it is not possible to provide the information at the same time, the information may be provided in phases without undue further delay.
+
+5.   The controller shall document any personal data breaches, comprising the facts relating to the personal data breach, its effects and the remedial action taken. That documentation shall enable the supervisory authority to verify compliance with this Article.
+
+--- 
+## Article 34: Communication of a personal data breach to the data subject
+
+1.   When the personal data breach is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall communicate the personal data breach to the data subject without undue delay.
+
+3.   The communication to the data subject referred to in paragraph 1 shall not be required if any of the following conditions are met:
+
+- (a) the controller has implemented appropriate technical and organisational protection measures, and those measures were applied to the personal data affected by the personal data breach, in particular those that render the personal data unintelligible to any person who is not authorised to access it, such as encryption;
+
+---
+
+## Article 35: Data protection impact assessment
+
+Article 35 deals with 
