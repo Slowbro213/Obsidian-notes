@@ -447,4 +447,52 @@ My machines need various secrets to properly operate, things like sudo passwords
 
 `age` is a simple file encryption tool, and as previously mentioned is the backend `sops` uses for encrypting its content.
 
-`sops-nix` is the tool i have chosen to use for injecting my secrets into my nix configs. NixOS turns your configuration files into other files under the `/nix/store` path (files which every user can access) after evaluation is done. Commands like `builtins.readFile` which nix can use to inject content from files into its configurations are evaluated and then the value from those files is written in plain text inside the result. This means that if your secrets were sitting in plain text inside permission controlled files for your user, and then you would read the value of those secrets into the nix configuration, every user on that machine would be able to read your secrets under the `/nix/store` path. 
+`sops-nix` is the tool i have chosen to use for injecting secrets into my nix configs. NixOS turns your configuration files into other files under the `/nix/store` path (files which every user can access) after evaluation is done. Commands like `builtins.readFile` which nix can use to inject content from files into its configurations are evaluated and then the value from those files is written in plain text inside the result. This means that if your secrets were sitting in plain text inside permission controlled files for your user, and then you would read the value of those secrets into the nix configuration, every user on that machine would be able to read your secrets under the `/nix/store` path.  With `sops-nix`, i can instead provide nix with the path of the file that *will* contain the decrypted value, which hides the actual value of the secret from `/nix/store` or anyone else trying to access my secrets. The only places secrets can be found are the nodes themselves or the workstation machine when the appropirate user has decrypted the files for editing purposes.
+
+The general flow for this is:
+- Write .sops.yaml to provide `sops` with infromation on where the yaml file(s) containing secrets are and who should see them
+- Wirte the secrets for each recipient using their respective public keys
+- Setup NixOS configurations for each node with `sops` and `age` properly configured
+- Reference secrets in these configurations for your usecases
+- Build each configuration, and install them into their respective nodes
+- Secrets are decrypted on installation within each node, which can then be read by other processes securely
+
+From this flow it should be clear that secrets never exist in plaintext anywhere outside of the nodes themselves or while editing said secrets from within the workstation machine.
+
+Lets see how the nodes of this homelab are configured using the shared module `sops.nix`:
+![[Pasted image 20261007101832.png]]
+
+`sops.defaultSopsFile = ../secrets/cluster.yaml;` Sets `cluster.yaml` as the default file from which secrets will take their values unless a secret (like a host specific one) has a different file configured as its source.
+
+`sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];` Tells `sops-nix` to use the hosts SSH private key as the age identity for decryption at activation time. The SSH public key of the node should be present on the main machine used for secrets editing. In my setup, i have given each node its ssh keys when they were first installed with `nixos-anywhere --extra-files`. The correct keys need to be present before we join the node into our cluster.
+
+`sops.secrets."k3s/token" = { };` Simply sets the secret called `k3s/token` with default options. In our case the default options include deriving the value of the secret from the `defaultSopsFile` which was set earlier. Default options also include setting the owner of the decrypted secret file as `root` with `0400` permissions.
+
+```nix
+sops.secrets."wifi/env" = {
+group = if (config.users.groups ? wpa_supplicant) then "wpa_supplicant" else "root";
+mode = "0440";
+};
+```
+
+Does the same thing but also lets the `wpa_supplicant` group (if it exists, other wise its `root`) read the file. Permissions were also set to `0440`.
+
+`sops.secrets."slowking/hashed-password" = { neededForUsers = true; };`  sets the password for the `slowking` user with the `neededForUsers` option which decrypts the secret early and puts it in `/run/secrets-for-users` before any user is created by NixOS.
+
+`sops.secrets."registry/password" = { };` Does the same thing as the `k3s/token` line above.
+
+The `sops.nix` files configures and sets secrets to be used cluster-wide and shared between nodes. One example of a secret thats set here being used in another module is the Wi-Fi password case we've already seen:
+
+```nix
+  config.networking = {
+  ...
+    wireless = {
+    ...
+      secretsFile = config.sops.secrets."wifi/env".path;
+    ...
+    };
+```
+
+`sops-nix` provides the wireless configuration with the path which will contain the decrypted Wi-Fi password on node activation.
+
+I have a demo walkthrough where i create secrets and then safely provide them to VMs which simulate my nodes in [[NixOS Secrets Management Demo]].

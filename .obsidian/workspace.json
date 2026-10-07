@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Projects/homelab/SECRETS-GUIDE.md",
+                "file": "Projects/homelab/Nixos.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "SECRETS-GUIDE"
+              "title": "Nixos"
             }
           }
         ]
@@ -211,8 +211,14 @@
   },
   "active": "020dae942d055859",
   "lastOpenFiles": [
+    "Demos/homelab/NixOS Secrets Management Demo.md",
     "Projects/homelab/Nixos.md",
+    "Pasted image 20261007101832.png",
+    "Pasted image 20261007101816.png",
     "Projects/homelab/SECRETS-GUIDE.md",
+    "Demos/Untitled.md",
+    "Demos/homelab",
+    "Demos",
     "GDPR/Notes.md",
     "GDPR/Plans.md",
     "GDPR/Definitions.md",
@@ -227,16 +233,12 @@
     "Pasted image 20260907182031.png",
     "Projects/homelab/Nixos.md.tmp.11789.8a95f4682b4f",
     "Projects/homelab/Nixos.md.tmp.11789.d33ebed0b57c",
-    "Projects/homelab/Nixos.md.tmp.11789.557b04af49aa",
-    "Projects/homelab/Nixos.md.tmp.11789.8ff7b825f4bf",
     "Pasted image 20260831105855.png",
     "Pasted image 20260828161107.png",
     "Pasted image 20260827225651.png",
     "Pasted image 20260827223508.png",
     "Pasted image 20260827223422.png",
-    "Pasted image 20260826224348.png",
     "Projects/homelab/Project Layout.md",
-    "Pasted image 20260813213743.png",
     "Projects/homelab/Homelab.md",
     "().md",
     "Excalidraw/Drawing 2026-08-04 19.04.35.excalidraw.md",
@@ -253,9 +255,6 @@
     "CKAD/Practice questions/Multi container pods.md",
     "CKAD/Practice questions/Observability.md",
     "CKAD/Practice questions/State.md",
-    "CKA/Courses/Preparation Progress.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/workflows/Requests, Limits and Advanced Scheduling.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/workflows/Deployments.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/workflows/ConfigMaps and Secrets.md"
+    "CKA/Courses/Preparation Progress.md"
   ]
 }
