@@ -209,8 +209,10 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "c172ba13c193321d",
+  "active": "020dae942d055859",
   "lastOpenFiles": [
+    "Projects/homelab/Project Layout.md",
+    "Projects/homelab/Nixos.md",
     "Projects/homelab/Nixos.md.tmp.885491.70f10c985dfd",
     "Projects/homelab/Nixos.md.tmp.885491.261826b3210e",
     "Projects/homelab/Nixos.md.tmp.885491.02f4d77328e4",
@@ -221,9 +223,7 @@
     "Projects/homelab/Nixos.md.tmp.885491.554f47999c5f",
     "Projects/homelab/Nixos.md.tmp.885491.fd44066fbf24",
     "Projects/homelab/Nixos.md.tmp.885491.054482007483",
-    "Projects/homelab/Nixos.md.tmp.885491.5d15eb0ea72d",
     "Demos/homelab/NixOS Secrets Management Demo.md",
-    "Projects/homelab/Nixos.md",
     "Pasted image 20261007101832.png",
     "Pasted image 20261007101816.png",
     "Projects/homelab/SECRETS-GUIDE.md",
@@ -239,7 +239,6 @@
     "Pasted image 20260827225651.png",
     "Pasted image 20260827223508.png",
     "Pasted image 20260827223422.png",
-    "Projects/homelab/Project Layout.md",
     "Projects/homelab/Homelab.md",
     "().md",
     "Excalidraw/Drawing 2026-08-04 19.04.35.excalidraw.md",

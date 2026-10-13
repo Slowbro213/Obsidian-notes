@@ -26,8 +26,7 @@ Everything begins with the `flake.nix`. Usual function definitions go something 
 
 A Nix Flake is comprised of `inputs`, `outputs` and a `description`. The description makes no difference in functionality. In `inputs` you declare what your flake needs in order to work, and in `outputs` you declare what your flake will create based on those inputs. Within this flake, I have declared that my inputs will be: the nix packages repository, `disko` ( a third-party module which allows for declarative disk layouts and partitioning ) and `sops-nix` ( a third-party module for managing secrets in my repo ). And in my outputs, I have first declared a helper function in nix called `mkNode`, which takes as an argument the `hostname` of a node and returns a `nixosSystem` configuration for that specific `hostname`. Then I have declared that my `nixosConfigurations` will be an attribute set ( think dictionaries in Python, just a set of key-value pairs ) where the values are nodes created from hostnames. As a result, every node is comprised of the same modules, only differing in those modules which are dependent on the hostname itself. This approach provides code reusability and minimizes duplication while keeping shared behavior between nodes consistent. It will be especially useful once I have more nodes, since adding a node is as trivial as adding a couple of files and modifying this attribute set.
 
-// TODO: explain NixOS modules (e.g., NixOS comes with variables like environment.systemPackages on its own to define packages in your system)
- 
+// TODO: lid-closing and power management behavior has been extracted to a separate module which hosts then import, affected docs need to be updated
 # Shared modules
 
 The entry point creates `nixosSystems` from shared modules as well as node-specific modules. Since shared modules are present on all nodes, I'll be covering them first.
@@ -496,3 +495,9 @@ The `sops.nix` file configures and sets secrets to be used cluster-wide and shar
 `sops-nix` provides the wireless configuration with the path which will contain the decrypted Wi-Fi password on node activation.
 
 I have a demo walkthrough where I create secrets and then safely provide them to VMs which simulate my nodes in [[NixOS Secrets Management Demo]].
+
+
+## Kubernetes
+
+
+
