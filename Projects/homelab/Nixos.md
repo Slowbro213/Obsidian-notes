@@ -10,10 +10,7 @@ The power of NixOS is not limited to what is mentioned here and surpasses my hum
 
 One particularly useful feature of NixOS is [Nix Flakes](https://nixos.wiki/wiki/flakes). According to the docs:
 >[Nix flakes provide a standard way to write Nix expressions (and therefore packages) whose dependencies are version-pinned in a lock file, improving reproducibility of Nix installations.](https://nixos.wiki/wiki/flakes#:~:text=Nix%20flakes%20provide%20a%20standard%20way%20to%20write%20Nix%20expressions%20%28and%20therefore%20packages%29%20whose%20dependencies%20are%20version%2Dpinned%20in%20a%20lock%20file%2C%20improving%20reproducibility%20of%20Nix%20installations%2E)
-
-As you might have guessed, I have used Nix Flakes in this project, and it is indeed a flake that serves as the entry point. Below I'll provide the entire tree of the `nixos` directory for reference:
-
-<img style="display: block; margin-left: auto; margin-right: auto; width: 50%;" src="Pasted image 20260813213743.png"  alt="filetree" />
+<img style="display: block; margin-left: auto; margin-right: auto; width: 50%;" src="Pasted image 20261013204243.png"  alt="filetree" />
 # The Entry Point
 
 Everything begins with the `flake.nix`. Usual function definitions go something along the lines of: input -> logic -> output. The contents of the `flake.nix` file are no different:
@@ -114,7 +111,7 @@ And lastly for the `common.nix` file, I have specified what system packages are 
 A Linux machine can be tuned for better performance depending on your workflow. Kubernetes clusters with lots of components running tend to be quite RAM-hungry, and tuning your machine such that `zramSwap` is enabled, for example, can help in dealing with RAM-heavy moments or workloads. Let's have a look at `performance.nix` to see what was tuned for my specific use cases and why:
 
 `modules/performance.nix`
-![[Pasted image 20260831105855.png]]
+![[Pasted image 20261013204410.png]]
 
 This module holds many configurations, some of which are overridable per node if the need for it arises in the future. Let's have a look at the first:
 
@@ -153,16 +150,6 @@ Transparent huge pages can cause a lot of issues if misused. Whenever a process 
 `psi=1` enables "Pressure Stall Information", which lets tools like the node-exporter scrape information about which processes are stalled waiting for resources and by how much. Useful when debugging why a service might be slow on the lower-level side of things.
 
 `mitigations=off` disables a security feature of CPUs meant to protect them from speculative execution attacks. CPU performance can be a real bottleneck in my `tux` node. Slightly less of a bottleneck in my `cachyos` node, but I've found it helpful nonetheless. The security impact of this is minimal in my case since the only workloads I'm running are the ones I create.
-
-Next, we have some power and performance settings:
-```nix
-  powerManagement.enable = true;
-  powerManagement.cpuFreqGovernor = "performance";
-  services.power-profiles-daemon.enable = lib.mkForce false;
-  services.tlp.enable = lib.mkForce false;
-```
-
-All of these features do more or less the same. My nodes are laptops and as such they don't require max throughput and power all day every day. Most OSs running on laptops tend to have settings enabled which limit the performance of the laptop in order to save some battery life. My nodes have been repurposed to servers and are plugged in at all times. Therefore, these settings are only a hindrance for my use case.
 
 Now for some RAM and swap tuning:
 ```nix
@@ -266,6 +253,35 @@ And finally:
 ```
 
 `systemd.oomd` is very useful. It uses PSI stats to determine when to OOM-kill (out of memory) processes, as opposed to waiting until the kernel is *completely out of memory* before acting. However, Kubernetes already does this on its own using `kubelet`. `kubelet` and `systemd.oomd` can't communicate and cooperate with each other, which can lead to more processes being OOM-killed than necessary. Since turning off `kubelet` would lead to this not being a Kubernetes cluster in the first place, I just disabled `systemd.oomd`.
+
+## Laptop Specifics
+
+Laptops have functionality that is not present in most machines and can actually hinder a node being used as a server, however there are remedial steps we can take to make up for this difference. In particular laptops want to prioritize energy efficiency, and they will achieve this by means of throttling your CPU's performance or by suspending your machine under certain conditions, both of which work against a servers interests especially the latter. Therefore i created a nix module containing laptop specific configs to prevent these issues that nodex can then optionally import:
+
+`modules/laptop.nix` 
+![[Pasted image 20261013205004.png]]
+
+This module is comprised of two blocks of configs, i will walk through them:
+
+```nix
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
+  };
+```
+
+The block above prevents `logind` from taking action when the mentioned events occur. All of these events (closing the lid, pressing the power button once, etc) would cause a laptop to suspend its action, a most horrible situation for a server that's supposed to be on as much as possible.
+
+Next, we have some power and performance settings:
+```nix
+  powerManagement.enable = true;
+  powerManagement.cpuFreqGovernor = "performance";
+  services.power-profiles-daemon.enable = lib.mkForce false;
+  services.tlp.enable = lib.mkForce false;
+```
+
+All of these features do more or less the same. My nodes are laptops and as such they don't require max throughput and power all day every day. Most OSes running on laptops tend to have settings enabled which limit the performance of the laptop in order to save some battery life. My nodes have been repurposed to servers and are plugged in at all times. Therefore, these settings are only a hindrance for my use case.
 
 ## Networking
 
@@ -499,5 +515,4 @@ I have a demo walkthrough where I create secrets and then safely provide them to
 
 ## Kubernetes
 
-
-
+Here i will talk about how im using NixOS to setup a working Kubernetes cluster, specifically a k3s cluster. All of the applications running in this project sit on top of Kubernetes, and Kubernetes itself sits on top of NixOS.
