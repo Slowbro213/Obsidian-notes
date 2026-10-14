@@ -510,9 +510,90 @@ The `sops.nix` file configures and sets secrets to be used cluster-wide and shar
 
 `sops-nix` provides the wireless configuration with the path which will contain the decrypted Wi-Fi password on node activation.
 
-I have a demo walkthrough where I create secrets and then safely provide them to VMs which simulate my nodes in [[NixOS Secrets Management Demo]].
+I have a demo walkthrough where I create secrets and then safely provide them to VM's which simulate my nodes in [[NixOS Secrets Management Demo]].
 
 
 ## Kubernetes
 
-Here i will talk about how im using NixOS to setup a working Kubernetes cluster, specifically a k3s cluster. All of the applications running in this project sit on top of Kubernetes, and Kubernetes itself sits on top of NixOS.
+Here i will talk about how im using NixOS to setup a working Kubernetes cluster, specifically a `k3s` cluster. All of the applications running in this project sit on top of Kubernetes, and Kubernetes itself sits on top of NixOS.
+
+`k3s` luckily for me is a first class module in NixOS, meaning that setting up a k3s control plane is as easy as writing the following config:
+
+`modules/k3s-server.nix`
+![[Pasted image 20261014210515.png]]
+
+Apart from the extra flags, the rest is actually very simple:
+
+```nix
+  services.k3s = {
+    enable = true;
+    role = "server";
+    tokenFile = config.sops.secrets."k3s/token".path;
+    ...
+```
+
+All we have to do is enable the `services.k3s` config , set the role we desire (server or agent, the former being the control plane node and the latter being a worker node), give the path to the file which will contain the token, in which case for us is the path of the file which will contain the decrypted token after the VM has been provided with its secrets, and NixOS does the rest.
+
+The `k3s-server.nix` module is to be imported by only some specific hosts if they wish to be a control plane node. Host specific nix configs will be explained a bit later, but for now its sufficient to know that the `cachyos` host is the sole user of this module. Despite having just one user, its exists independent of the hosts module, in the case other hosts wish to import it as well in the future.
+
+Now for the `extraFlags` bit, which customizes our cluster:
+```nix
+    extraFlags = [
+      "--flannel-backend=host-gw"
+      "--node-name=cachyos"
+      "--node-ip=${node.ipv4}"
+      "--flannel-iface=${node.wifiInterface}"  # pin flannel to WiFi (not tailscale0/wwan)
+      "--tls-san=192.168.1.31"
+      "--tls-san=k3s.gentoo.lan"
+      "--write-kubeconfig-mode=0644"
+      # Longhorn only auto-creates its default disk on nodes carrying this label
+      # (create-default-disk-labeled-nodes=true). Without it the node reports 0
+      # storage and no PVC can schedule.
+      "--node-label=node.longhorn.io/create-default-disk=true"
+      "--secrets-encryption"
+    ];
+```
+
+`--flannel-backend=host-gw` Is fitting for my use case. Kubernetes needs a CNI (container networking interface) plugin to work, which creates a virtual network and is responsible for communication with pods. `flannel` is a simple CNI plugin for Kubernetes. Its not the most powerful, but for small setups such as mine it gets the job done. The default `flannel` backend is `VXLAN`, which performs a ton of work to move packets between pods. That work is necessary for complex setups, but `host-gw` avoids all of it by taking advantage of the fact that all of my nodes are within the same LAN.
+
+```nix
+      "--node-name=cachyos"
+      "--node-ip=${node.ipv4}"
+      "--flannel-iface=${node.wifiInterface}"
+```
+
+These three provide the node of the cluster with a name, an IP, and the network interface `flannel` will use for communication with pods.
+
+```nix
+	  "--tls-san=192.168.1.31"
+      "--tls-san=k3s.gentoo.lan"
+```
+
+The above flags deal with TLS and Certificates. Whenever a client talks to a server, generally the client wants to make sure that they really are talking to the person they intend, and that what is said between them remains anonymous. The internet has solved this problem through [Asymmetric Encryption](https://www.geeksforgeeks.org/computer-networks/what-is-asymmetric-encryption/) and Certificates. Certificates contain information about who they are, and a signature from a trusted authority that the certificate is legit. Information about the host used to be just a CN (Common Name) which held the hostname of the server, but today TLS uses SAN (Subject Alternative Name) for verifying the host, which can hold a list of DNS names or IPs. When k3s boots for the first time, it generates a CA (Certificate Authority), which then issues a Certificate for the API server. This generated certificate contains the following names as IPs:
+
+- `localhost`, `127.0.0.1` (for in-cluster components)
+- the node's auto-detected IP and hostname
+- `kubernetes.default.svc` (the in-cluster DNS name for the API) 
+
+So all clients who send requests to the server using names or IPs present in the certificate to communicate will trust the API server. Now consider if someone were to try and talk to `k3s.gentoo.lan`, their request would get routed to the API server, which would present a certificate where the names and IPs it answers to don't contain `k3s.gentoo.lan`. That would lead to TLS failing between the client and the host, rendering communication impossible. The flags above add the additional name `k3s.gentoo.lan` and IP 192.168.1.31 to the generated certificate, so clients looking to talk to a server with that name or that IP will see a Certificate they recognize.
+
+`--write-kubeconfig-mode=0644` Sets the permission of the `kubeconfig` file, which grants full control to the cluster to anyone who has it. Normally the default is `0600`, which lets only the root user access it, but since I'm the only person who can log into my nodes, `0644` lets anyone read it, making it convenient for my `slowking` user to control the cluster. 
+
+`--node-label=node.longhorn.io/create-default-disk=true` Is a bit more complicated as it requires cooperation with another config that's within the Kubernetes configs, namely Longhorn. In short Longhorn provides distributed block storage, which can be used in combination with Kubernetes Persistent Volumes so that stateful workloads such as a database can get resilient and reliable storage. For this project, `create-default-disk-labeled-nodes=true` has been set for Longhorn, which will cause it to only create default disks on nodes which contain the label `node.longhorn.io/create-default-disk=true`. This line sets that label. Some nodes might not want this label (such as a compute only Raspberry Pi node, i have many future plans), hence why default disk creation is an opt-in feature for our cluster.
+
+`--secrets-encryption` Encrypts Kubernetes secrets at rest. The default is just a base64 encoding. Although i doubt i will ever need it in the future (this protects from things like stolen backups), my cluster aims to be as close to a production level cluster within reasonable limits, and this line is a fairly easy way to close that gap.
+
+Now that `k3s` configs for the server are done, we have:
+
+`networking.firewall.allowedTCPPorts = [ 6443 10250 80 443 9100 ];` Which opens up ports needed for our `k3s` server to work. `6443` is the port the kube API server uses, `10250` is what kubelet uses, `80 443` are HTTP(S) ports, and `9100` is for the `node-exporter`.
+
+Now that the server is done, its the turn of the agent:
+
+`modules/k3s-agent.nix`
+![[Pasted image 20261014224738.png]]
+
+As you can this file is pretty much the same as the other, so ill only go over the notable differences:
+- `role = "agent"` is the first and probably the most important, its what makes the node that will import this the agent that joins the server as opposed to its own server.
+- `serverAddr = "https://192.168.1.31:6443";` tells the agent where to find the server, and thanks to the `--tls-san` changes we added on the server, TLS will work with `192.168.1.31` .
+- Less `extraFlags`, only node identity related ones, along with the Longhorn config for default disk creation.
+- The kube API port is not included in the `allowedTCPPorts`, since no process on agent nodes will listen on that port.
