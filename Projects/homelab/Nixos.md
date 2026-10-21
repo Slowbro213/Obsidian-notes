@@ -597,3 +597,8 @@ As you can this file is pretty much the same as the other, so ill only go over t
 - `serverAddr = "https://192.168.1.31:6443";` tells the agent where to find the server, and thanks to the `--tls-san` changes we added on the server, TLS will work with `192.168.1.31` .
 - Less `extraFlags`, only node identity related ones, along with the Longhorn config for default disk creation.
 - The kube API port is not included in the `allowedTCPPorts`, since no process on agent nodes will listen on that port.
+
+Every node running my cluster has configurations in common with each other in regards to k3s. Hence a separate k3s commons module that every node gets by default from `flake.nix` was created:
+
+`modules/k3s-common.nix`
+![[Pasted image 20261021162533.png]]
