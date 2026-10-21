@@ -233,7 +233,7 @@ Disk scheduling:
 1. Whenever a device whose name matches the `nvme[0-9]n[0-9]` regex is added or changes, set its `queue/scheduler` attribute to `none`.
 2. Whenever a device whose name matches the `sd[a-z]` regex is added or changes, and its `queue/rotational` attribute is `0` (meaning it's not a spinning disk), set its `queue/scheduler` attribute to `mq-deadline`.
 
-The OS has I/O scheduling abilities: whenever some writes are queued, it can decide the order in which those writes are carried out. In the case of spinning disks this was highly beneficial, as reducing the seek time between each write meant saving a considerable amount of time. NVMes, on the other hand (which is what the `cachyos` has), don't really have seek times, and perform scheduling all on their own. Having the OS do scheduling on top of what the NVMe does just wastes CPU for no added gain. Therefore, scheduling is turned off (setting the attribute to `none`). SATA SSDs, on the other hand, have very basic scheduling on their own. Letting the OS do the I/O scheduling for a SATA SSD can be beneficial.
+The OS has I/O scheduling abilities: whenever some writes are queued, it can decide the order in which those writes are carried out. In the case of spinning disks this was highly beneficial, as reducing the seek time between each write meant saving a considerable amount of time. NVMes, on the other hand (which is what the `cachyos` host has), don't really have seek times, and perform scheduling all on their own. Having the OS do scheduling on top of what the NVMe does just wastes CPU for no added gain. Therefore, scheduling is turned off (setting the attribute to `none`). SATA SSDs, on the other hand, have very basic scheduling on their own. Letting the OS do the I/O scheduling for a SATA SSD can be beneficial.
 
 
 `journald` configuring:
@@ -601,4 +601,21 @@ As you can this file is pretty much the same as the other, so ill only go over t
 Every node running my cluster has configurations in common with each other in regards to k3s. Hence a separate k3s commons module that every node gets by default from `flake.nix` was created:
 
 `modules/k3s-common.nix`
-![[Pasted image 20261021162533.png]]
+![[Pasted image 20261021210916.png]]
+
+Lets go through everything one at a time:
+
+```nix
+  services.openiscsi = {
+    enable = true;
+    name = "iqn.2020-01.io.homelab:${config.networking.hostName}";
+  };
+```
+
+The block above enables the `openiscsi` service, which exposes disks from one machine  to the network for anyone else to access. Its how a Longhorn volume created in one machine can be accessed from a pod in another machine. `name = "iqn.2020-01.io.homelab:${config.networking.hostName}";` Gives each of the hosts a unique and stable name (stable refers to a name that stays the same even after a reboot).
+
+`boot.kernelmodules = [ "iscsi_tcp" "br_netfilter" "overlay" "dm_crypt" ];` Enables the following kernel modules for my nodes:
+- `iscsi_tcp` Lets disks exposed via `openiscsi` to be accessible through TCP
+- `br_netfilter` Makes packets pass through the rules set by `iptable`, which can be controlled by the `NetworkPolicies` Resource.
+- `overlay` Is needed for the container runtime such as `containerd`.
+- 
