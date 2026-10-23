@@ -233,8 +233,7 @@ Disk scheduling:
 1. Whenever a device whose name matches the `nvme[0-9]n[0-9]` regex is added or changes, set its `queue/scheduler` attribute to `none`.
 2. Whenever a device whose name matches the `sd[a-z]` regex is added or changes, and its `queue/rotational` attribute is `0` (meaning it's not a spinning disk), set its `queue/scheduler` attribute to `mq-deadline`.
 
-The OS has I/O scheduling abilities: whenever some writes are queued, it can decide the order in which those writes are carried out. In the case of spinning disks this was highly beneficial, as reducing the seek time between each write meant saving a considerable amount of time. NVMes, on the other hand (which is what the `cachyos` host has), don't really have seek times, and perform scheduling all on their own. Having the OS do scheduling on top of what the NVMe does just wastes CPU for no added gain. Therefore, scheduling is turned off (setting the attribute to `none`). SATA SSDs, on the other hand, have very basic scheduling on their own. Letting the OS do the I/O scheduling for a SATA SSD can be beneficial.
-
+The OS has I/O scheduling abilities: whenever some writes are queued, it can decide the order in which those writes are carried out. In the case of spinning disks this was highly beneficial, as reducing the seek time between each write meant saving a considerable amount of time. SSD's don't have these seek times because they don't have a moving head, so the benefits arent as great, but its still a worthy inclusion for SATA drives. SATA drives (like in the case of `tux`) have one queue for processing reads and writes. A machine running different processes in parallel, each of which will have its own read and write requests, would need to coordinate these requests so that one process doesn't starve every other process by hogging the entire queue. NVME's on the other hand have multiple queues, which reduces sharing of a given queue between different CPU's, which in turn requires less coordination and therefore less work. 
 
 `journald` configuring:
 ```nix
@@ -617,5 +616,23 @@ The block above enables the `openiscsi` service, which exposes disks from one ma
 `boot.kernelmodules = [ "iscsi_tcp" "br_netfilter" "overlay" "dm_crypt" ];` Enables the following kernel modules for my nodes:
 - `iscsi_tcp` Lets disks exposed via `openiscsi` to be accessible through TCP
 - `br_netfilter` Makes packets pass through the rules set by `iptable`, which can be controlled by the `NetworkPolicies` Resource.
-- `overlay` Is needed for the container runtime such as `containerd`.
-- 
+- `overlay` Is used by container runtimes to manage filesystems. Containers will typically have a base filesystem from a given OS, and then make edits upon that file system for the app(s) within that container to work. If you have many containers running the same base filesystem, having copies of these bases can be wasteful. `overlay` allows you to compose many filesystems by merging "lower" base immutable filesystems with "upper" edits of that base FS, essentially reusing the base FS without wastefully copying it.
+- `dm_crypt` functions as a layer between applications and the underlying disk. Whenever an app wants to write, `dm_crypt` will encrypt the contents first before the write is given to the disk. Whenever an app wants to read, `dm_crypt` will first decrypt the contents retrieved from disk before serving it to the app. It does not enable encryption by default, only enables the capability to have it. Encrypted Longhorn values need this module
+
+`boot.supportedFilesystems = [ "nfs" ];` Enables support for NFS (Network File System). `openiscsi` supports access of disks over the network, while NFS supports accessing of files over the network. NFS is required for RWX (ReadWriteMany) Persistent Volumes, which are volumes readable and writable by more than one node.
+
+`environment.systemPackages = [ pkgs.nfs-utils pkgs.openiscsi pkgs.cryptsetup ];`
+ Installs a couple of useful tools.
+
+```nix
+  systemd.tmpfiles.rules = [
+    "d /usr/local/bin 0755 root root - -"
+    "d /usr/local/sbin 0755 root root - -"
+    "L+ /usr/local/bin/iscsiadm  - - - - /run/current-system/sw/bin/iscsiadm"
+    "L+ /usr/local/sbin/iscsiadm - - - - /run/current-system/sw/bin/iscsiadm"
+  ];
+```
+
+`systemd` supports managing files through declarative rules (hooray for nix users!). The rules and their combinations are a bit lengthy to explain here, i myself don't know them, i have to google them or ask AI to generate these rules, but ill explain enough to understand whats going on here. the `systemd.tmpfiles.rules` expects an array of strings each of which is its own rule. A rule is created by a series of 7 arguments: Type, Path, Mode, User, Group, Age, Argument. Type refers to what we want to do. For example `d` means "create if not exists". `L+` means "create symbolic link if not exists". Path simply refers to the path we want to operate on. Mode sets the permissions of the path. User and Group sets the owner and the group of that path. Age sets a time for when this path should be deleted, and Argument can mean different things depending on the Type supplied in the rule. `d` will always have the Argument `-`. When `L+` is present, the Argument will refer to the symlink target.
+
+Knowing this, the above config block creates the two directories in the first two rows, and the other two rows create symbolic links from files in those directories to other directories. Packages installed using nix don't sit in 

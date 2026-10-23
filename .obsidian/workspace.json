@@ -8,7 +8,7 @@
         "type": "tabs",
         "children": [
           {
-            "id": "4dac163ee8dd9c4b",
+            "id": "020dae942d055859",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -80,7 +80,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 229.5
+    "width": 246.5
   },
   "right": {
     "id": "b59a997a52892a08",
@@ -208,37 +208,38 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "4dac163ee8dd9c4b",
+  "active": "de68297e1f511d8f",
   "lastOpenFiles": [
     "Pasted image 20261021210916.png",
-    "Projects/homelab/Project Layout.md",
-    "Projects/homelab/Nixos.md",
     "Pasted image 20261021162533.png",
     "Pasted image 20261014224738.png",
-    "Projects/homelab/Homelab.md",
     "Pasted image 20261014210515.png",
     "Pasted image 20261013205004.png",
     "Pasted image 20261013204410.png",
     "Pasted image 20261013204243.png",
     "Pasted image 20261013203625.png",
-    "Pasted image 20261013204138.png",
-    "Pasted image 20260813213743.png",
-    "Pasted image 20260826224348.png",
+    "Projects/homelab/Project Layout.md",
+    "Projects/homelab/Nixos.md",
+    "Projects/homelab/Nixos.md.tmp.885491.70f10c985dfd",
+    "Projects/homelab/Nixos.md.tmp.885491.261826b3210e",
+    "Projects/homelab/Nixos.md.tmp.885491.02f4d77328e4",
+    "Projects/homelab/Nixos.md.tmp.885491.b7b244027222",
+    "Projects/homelab/Nixos.md.tmp.885491.83c0d7a20645",
+    "Projects/homelab/Nixos.md.tmp.885491.4957f38a0c77",
+    "Projects/homelab/Nixos.md.tmp.885491.c731373990a1",
+    "Projects/homelab/Nixos.md.tmp.885491.554f47999c5f",
+    "Projects/homelab/Nixos.md.tmp.885491.fd44066fbf24",
+    "Projects/homelab/Nixos.md.tmp.885491.054482007483",
     "Demos/homelab/NixOS Secrets Management Demo.md",
-    "Demos/homelab",
-    "Demos",
+    "Pasted image 20261007101832.png",
+    "Pasted image 20261007101816.png",
     "Projects/homelab/SECRETS-GUIDE.md",
+    "Demos/Untitled.md",
     "GDPR/Notes.md",
     "GDPR/Plans.md",
     "GDPR/Definitions.md",
-    "GDPR",
-    "Projects/homelab/Nixos.md.tmp.9195.89b00756ebb4",
-    "Projects/homelab/Nixos.md.tmp.9195.00b1fe70eefe",
-    "Projects/homelab/Nixos.md.tmp.9195.fb8cb1e530c4",
-    "Projects/homelab/Nixos.md.tmp.9195.bc51b85c9424",
-    "Projects/homelab/Nixos.md.tmp.9195.99101eef088f",
-    "Projects/homelab/Nixos.md.tmp.11789.8a95f4682b4f",
-    "Projects/homelab/Nixos.md.tmp.11789.d33ebed0b57c",
+    "Pasted image 20260909115536.png",
+    "Projects/homelab/Homelab.md",
     "().md",
     "Excalidraw/Drawing 2026-08-04 19.04.35.excalidraw.md",
     "Excalidraw/Drawing 2026-07-08 19.38.19.excalidraw.md",
@@ -254,7 +255,6 @@
     "CKAD/Practice questions/Multi container pods.md",
     "CKAD/Practice questions/Observability.md",
     "CKAD/Practice questions/State.md",
-    "CKA/Courses/Preparation Progress.md",
-    "CKA/Courses/freeCodeCamp CKA perparation/workflows/Requests, Limits and Advanced Scheduling.md"
+    "CKA/Courses/Preparation Progress.md"
   ]
 }
