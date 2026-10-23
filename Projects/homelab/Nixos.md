@@ -600,7 +600,7 @@ As you can this file is pretty much the same as the other, so ill only go over t
 Every node running my cluster has configurations in common with each other in regards to k3s. Hence a separate k3s commons module that every node gets by default from `flake.nix` was created:
 
 `modules/k3s-common.nix`
-![[Pasted image 20261021210916.png]]
+![[Pasted image 20261023161834.png]]
 
 Lets go through everything one at a time:
 
@@ -635,4 +635,8 @@ The block above enables the `openiscsi` service, which exposes disks from one ma
 
 `systemd` supports managing files through declarative rules (hooray for nix users!). The rules and their combinations are a bit lengthy to explain here, i myself don't know them, i have to google them or ask AI to generate these rules, but ill explain enough to understand whats going on here. the `systemd.tmpfiles.rules` expects an array of strings each of which is its own rule. A rule is created by a series of 7 arguments: Type, Path, Mode, User, Group, Age, Argument. Type refers to what we want to do. For example `d` means "create if not exists". `L+` means "create symbolic link if not exists". Path simply refers to the path we want to operate on. Mode sets the permissions of the path. User and Group sets the owner and the group of that path. Age sets a time for when this path should be deleted, and Argument can mean different things depending on the Type supplied in the rule. `d` will always have the Argument `-`. When `L+` is present, the Argument will refer to the symlink target.
 
-Knowing this, the above config block creates the two directories in the first two rows, and the other two rows create symbolic links from files in those directories to other directories. Packages installed using nix don't sit in 
+Knowing this, the above config block creates the two directories in the first two rows, and the other two rows create symbolic links from files in those directories to other directories. Packages installed using nix usually sit under the `/nix/store` path, making it so a tool that needs a binary from a package wont find it on places binaries are usually found in Linux. Therefore a symbolic link for `iscsiadm` was needed.
+
+` hardware.enableRedistributableFirmware = true;` permits the use of proprietary Wi-Fi even if the installation process leaves this option out by default.
+
+
