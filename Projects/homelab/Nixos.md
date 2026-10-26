@@ -639,4 +639,37 @@ Knowing this, the above config block creates the two directories in the first tw
 
 ` hardware.enableRedistributableFirmware = true;` permits the use of proprietary Wi-Fi even if the installation process leaves this option out by default.
 
+```nix
+  sops.templates."registries.yaml".content = ''
+    mirrors:
+      registry.gentoo.lan:
+        endpoint:
+          - "https://registry.gentoo.lan"
+    configs:
+      "registry.gentoo.lan":
+        auth:
+          username: registry-admin
+          password: ${config.sops.placeholder."registry/password"}
+        tls:
+          ca_file: /etc/rancher/k3s/certs/gentoo-internal-ca.crt
+  '';
+```
+
+The block above creates a file `registries.yaml` with the specified content written within it,  which contains the credentials for `zot`. These credentials are needed by `containerd` in order to pull and use images stored within it. The contents of this file are in a format `containerd` can understand, and contains the path of the file which will have the decrypted `zot` password.
+
+```nix
+  environment.etc."rancher/k3s/registries.yaml".source =
+    config.sops.templates."registries.yaml".path;
+```
+
+Puts the file we created on a path `k3s` expects.
+
+```nix
+  environment.etc."rancher/k3s/certs/gentoo-internal-ca.crt".source =
+    ../assets/gentoo-internal-ca.crt;
+```
+
+Sets the TLS cert for Traefik, my current Kubernetes Ingress Controller. Just as every other app in my cluster, `zot` sits behind the Ingress Controller when talking to processes outside of the clusters existing pods, and that Ingress Controller needs to present a cert for TLS to be established. `containerd` needs `zot` in order to pull images, and for that connection to occur `containerd` must trust the proxy sitting in front of `zot`.
+
+## Hosts
 
