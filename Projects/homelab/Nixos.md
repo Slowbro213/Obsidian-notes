@@ -673,3 +673,12 @@ Sets the TLS cert for Traefik, my current Kubernetes Ingress Controller. Just as
 
 ## Hosts
 
+Most of everything so far configures all nodes present in the cluster unless specifically stated otherwise. In this section i will be discussing host-specific configurations and how some modules are imported for just one of the hosts. Lets have a look at the relevant section of the project for this topic:
+
+![[Pasted image 20261027214552.png]]
+
+Here we can clearly see a directory for each host, each of which has 3 files: `default.nix`, `disko.nix`, and `hardware.nix`. Ill cover them from least important for our purposes to most:
+
+
+`hosts/{host}/hardware.nix`
+![[Pasted image 20261027220654.png]]
