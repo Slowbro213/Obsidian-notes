@@ -682,3 +682,25 @@ Here we can clearly see a directory for each host, each of which has 3 files: `d
 
 `hosts/{host}/hardware.nix`
 ![[Pasted image 20261027220654.png]]
+
+`imports = [ (modulesPath + "/installer/scan/not-detected.nix") ]` Imports a standard NixOS module for detecting devices our `hardware.nix` might miss
+
+`boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "usbhid" "usb_storage" "sd_mod" ]` loads Kernel Modules for `initrd`, a small in-memory FS Linux needs in order to find and mount the real root FS. 
+
+```nix
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+``` 
+
+Enables the bootloader, and lets NixOS manage boot entries (like the different generations) in the machines UEFI firmware.
+
+`hardware.cpu.amd.updateMicrocode = lib.mkDefault true` on `cachyos` and
+`hardware.cpu.intel.updateMicrocode = lib.mkDefault true` on `tux` enables updates for `Microcode` , a low-level software that runs inside the CPU and turns x86-64 instructions into Microoperations (the instructions your CPU actually performs). This line is different for each host since they have different CPU vendors.
+
+`nixpkgs.hostPlatform = "x86_64-linux"` This tells the package manager which architecture the host machine uses so its packages will match.
+
+I wont get into the technical details of `disko.nix`, but its used to describe the layout of the physical disk.
+
+`hosts/{host}/disko.nix`
+![[Pasted image 20261028214359.png]]
+
