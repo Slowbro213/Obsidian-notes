@@ -22,8 +22,6 @@ Everything begins with the `flake.nix`. Usual function definitions go something 
 >The `nixpkgs/nixos-25.11` version has been updated to pull in the newest Linux kernel.
 
 A Nix Flake is comprised of `inputs`, `outputs` and a `description`. The description makes no difference in functionality. In `inputs` you declare what your flake needs in order to work, and in `outputs` you declare what your flake will create based on those inputs. Within this flake, I have declared that my inputs will be: the nix packages repository, `disko` ( a third-party module which allows for declarative disk layouts and partitioning ) and `sops-nix` ( a third-party module for managing secrets in my repo ). And in my outputs, I have first declared a helper function in nix called `mkNode`, which takes as an argument the `hostname` of a node and returns a `nixosSystem` configuration for that specific `hostname`. Then I have declared that my `nixosConfigurations` will be an attribute set ( think dictionaries in Python, just a set of key-value pairs ) where the values are nodes created from hostnames. As a result, every node is comprised of the same modules, only differing in those modules which are dependent on the hostname itself. This approach provides code reusability and minimizes duplication while keeping shared behavior between nodes consistent. It will be especially useful once I have more nodes, since adding a node is as trivial as adding a couple of files and modifying this attribute set.
-
-// TODO: lid-closing and power management behavior has been extracted to a separate module which hosts then import, affected docs need to be updated
 # Shared modules
 
 The entry point creates `nixosSystems` from shared modules as well as node-specific modules. Since shared modules are present on all nodes, I'll be covering them first.
@@ -699,8 +697,11 @@ Enables the bootloader, and lets NixOS manage boot entries (like the different g
 
 `nixpkgs.hostPlatform = "x86_64-linux"` This tells the package manager which architecture the host machine uses so its packages will match.
 
-I wont get into the technical details of `disko.nix`, but its used to describe the layout of the physical disk.
-
 `hosts/{host}/disko.nix`
 ![[Pasted image 20261028214359.png]]
 
+`disko.nix` uses the third-party module previously mentioned on the entrypoint section of the NixOS project, Disko, in order to setup the physical SSD of my nodes such that Linux can properly use it.
+
+`disko.devices.disk.main = { ` tells Disko to configure a device of type disk called "main" (i could have called it anything, the line could have very easily been `disko.devices.disk.thanas`) using the settings ive provided for it below.
+
+`type = "disk"` simply tells Disko we are referring to an entire physical Disk
