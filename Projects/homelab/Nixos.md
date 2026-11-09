@@ -702,6 +702,30 @@ Enables the bootloader, and lets NixOS manage boot entries (like the different g
 
 `disko.nix` uses the third-party module previously mentioned on the entrypoint section of the NixOS project, Disko, in order to setup the physical SSD of my nodes such that Linux can properly use it.
 
-`disko.devices.disk.main = { ` tells Disko to configure a device of type disk called "main" (i could have called it anything, the line could have very easily been `disko.devices.disk.thanas`) using the settings ive provided for it below.
+`disko.devices.disk.main = { ` tells Disko to configure a device of type disk called "main" (i could have called it anything, the line could have very easily been `disko.devices.disk.thanas`) using the settings I've provided for it below.
 
-`type = "disk"` simply tells Disko we are referring to an entire physical Disk
+`type = "disk"` simply tells Disko we are referring to an entire physical Disk.
+
+`device = "/dev/disk/by-id/nvme-SAMSUNG_MZAL4256HBJD-00BL2_S67PNF0W869279"` tells Disko where to find the physical disk. This is different for each host since they have different physical disks. `cachyos` has the Samsung NVME, `tux` has the Sata drive we discussed earlier and its line is `device = "/dev/disk/by-id/ata-SanDisk_X400_M.2_2280_256GB_170717803474"`.
+
+`content = {` contains the specifications of the partition.
+
+`type = "gpt";` Specifies that [GPT](https://en.wikipedia.org/wiki/GUID_Partition_Table) partitioning is to be used, a standard modern partitioning method.
+
+```nix
+  partitions = {
+	ESP = {
+	  size = "512M";
+	  type = "EF00";
+	  content = { type = "filesystem"; format = "vfat"; mountpoint = "/boot"; mountOptions = [ "umask=0077" ]; };
+	};
+	root = {
+	  size = "100%";
+	  content = { type = "filesystem"; format = "xfs"; mountpoint = "/"; mountOptions = [ "noatime" ]; };
+	};
+  };
+```
+
+This block describes the actual partitions we want. We need two in total, one to hold files for starting the computer itself, and one for the main FS everything else will run on.
+
+ESP is just the name we are giving the first partition, and it supposed to mean "EFI System Partition". A partition for systems that use UEFI to boot. 
