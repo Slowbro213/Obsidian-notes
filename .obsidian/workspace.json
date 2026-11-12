@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Projects/homelab/Nixos.md",
+                "file": "Projects/homelab/NixOS/Security.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Nixos"
+              "title": "Security"
             }
           }
         ]
@@ -210,12 +210,22 @@
   },
   "active": "020dae942d055859",
   "lastOpenFiles": [
+    "Projects/homelab/NixOS/Networking.md",
+    "Projects/homelab/NixOS/Laptop Configuration.md",
+    "Projects/homelab/NixOS/Performance.md",
+    "Projects/homelab/NixOS/Common Configuration.md",
+    "Projects/homelab/NixOS/Entry Point.md",
+    "Projects/homelab/Nixos.md",
+    "Projects/homelab/NixOS/Security.md",
+    "Projects/homelab/NixOS/Secrets Management.md",
+    "Projects/homelab/NixOS/Kubernetes Setup.md",
+    "Projects/homelab/NixOS/Hosts.md",
+    "Projects/homelab/NixOS",
     "Pasted image 20261110153419.png",
     "Pasted image 20261110152617.png",
     "Pasted image 20261028214359.png",
     "GDPR/Notes.md",
     "GDPR/Definitions.md",
-    "Projects/homelab/Nixos.md",
     "Pasted image 20261027220654.png",
     "Pasted image 20261027214552.png",
     "Pasted image 20261023161910.png",
@@ -223,7 +233,6 @@
     "Pasted image 20261023161834.png",
     "Pasted image 20261021210916.png",
     "Pasted image 20261021162533.png",
-    "Pasted image 20261014224738.png",
     "Projects/homelab/Project Layout.md",
     "Projects/homelab/Nixos.md.tmp.885491.70f10c985dfd",
     "Projects/homelab/Nixos.md.tmp.885491.261826b3210e",
@@ -234,7 +243,6 @@
     "Projects/homelab/Nixos.md.tmp.885491.c731373990a1",
     "Projects/homelab/Nixos.md.tmp.885491.554f47999c5f",
     "Projects/homelab/Nixos.md.tmp.885491.fd44066fbf24",
-    "Projects/homelab/Nixos.md.tmp.885491.054482007483",
     "Demos/homelab/NixOS Secrets Management Demo.md",
     "Projects/homelab/SECRETS-GUIDE.md",
     "Demos/Untitled.md",
@@ -247,14 +255,6 @@
     "Untitled.md",
     "CKAD/Practice questions/GAP.md",
     "CKAD/Practice questions/Services.md",
-    "CKAD/Practice questions/Pod Design.md",
-    "CKAD/Practice questions/Podman.md",
-    "CKAD/Practice questions/Helm.md",
-    "CKAD/Practice questions/Configuration.md",
-    "CKAD/Practice questions/Core Concepts.md",
-    "CKAD/Practice questions/Multi container pods.md",
-    "CKAD/Practice questions/Observability.md",
-    "CKAD/Practice questions/State.md",
-    "CKA/Courses/Preparation Progress.md"
+    "CKAD/Practice questions/Pod Design.md"
   ]
 }
